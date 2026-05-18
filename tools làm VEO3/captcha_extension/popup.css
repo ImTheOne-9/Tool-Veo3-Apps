@@ -1,0 +1,72 @@
+/* popup.css — VEO3 Captcha Solver popup styles */
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  width: 280px;
+  min-height: 180px;
+  padding: 16px;
+  font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #0f1117;
+  color: #e2e8f0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.header .icon { font-size: 18px; }
+.header h1   { font-size: 14px; font-weight: 700; }
+
+.status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #1a1f2e;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #6b7280;
+}
+.dot.green  { background: #22c55e; box-shadow: 0 0 6px #22c55e88; }
+.dot.red    { background: #ef4444; }
+.dot.yellow { background: #f59e0b; }
+.dot.gray   { background: #6b7280; }
+
+.label { opacity: .7; }
+.value { margin-left: auto; font-weight: 600; font-size: 11px; }
+
+.btn {
+  width: 100%;
+  padding: 8px;
+  border-radius: 6px;
+  border: none;
+  background: #3b5bdb;
+  color: white;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  transition: background .2s;
+}
+.btn:hover      { background: #4c6ef5; }
+.btn.secondary  { background: #374151; }
+.btn.secondary:hover { background: #4b5563; }
+.btn:disabled   { opacity: .6; cursor: not-allowed; }
+
+.footer {
+  margin-top: 12px;
+  font-size: 10px;
+  opacity: .4;
+  text-align: center;
+}

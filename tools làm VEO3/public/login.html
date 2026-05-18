@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workflow AI Giá Rẻ — Đăng nhập</title>
+  <meta name="description" content="Đăng nhập hoặc đăng ký tài khoản VEO3 Flow Automation Tool">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0">
+  <style>
+    :root {
+      --bg-primary: #0a0a12;
+      --bg-secondary: #111120;
+      --bg-card: #161628;
+      --bg-input: #12121f;
+      --glass-bg: rgba(20, 20, 40, 0.85);
+      --glass-border: rgba(138, 92, 246, 0.15);
+      --border-color: rgba(255, 255, 255, 0.06);
+      --border-focus: rgba(138, 92, 246, 0.5);
+      --text-primary: #f0f0f5;
+      --text-secondary: #a0a0b8;
+      --text-muted: #5a5a75;
+      --accent: #8a5cf6;
+      --accent-hover: #7c4dff;
+      --accent-glow: rgba(138, 92, 246, 0.25);
+      --success: #34d399;
+      --success-bg: rgba(52, 211, 153, 0.1);
+      --error: #ef4444;
+      --error-bg: rgba(239, 68, 68, 0.1);
+      --warning: #fbbf24;
+      --warning-bg: rgba(251, 191, 36, 0.1);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* === Background Effects === */
+    .bg-effects {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      animation: orbFloat 25s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 600px;
+      height: 600px;
+      background: #8a5cf6;
+      top: -250px;
+      left: -150px;
+    }
+
+    .orb-2 {
+      width: 500px;
+      height: 500px;
+      background: #ec4899;
+      bottom: -200px;
+      right: -150px;
+      animation-delay: -8s;
+    }
+
+    .orb-3 {
+      width: 400px;
+      height: 400px;
+      background: #06b6d4;
+      top: 40%;
+      left: 60%;
+      animation-delay: -16s;
+    }
+
+    @keyframes orbFloat {
+
+      0%,
+      100% {
+        transform: translate(0, 0) scale(1);
+      }
+
+      33% {
+        transform: translate(40px, -30px) scale(1.1);
+      }
+
+      66% {
+        transform: translate(-30px, 20px) scale(0.95);
+      }
+    }
+
+    /* === Login Container === */
+    .login-container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(40px);
+      -webkit-backdrop-filter: blur(40px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 40px 36px;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.03),
+        0 20px 80px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(138, 92, 246, 0.08);
+      animation: cardAppear 0.6s ease-out;
+    }
+
+    @keyframes cardAppear {
+      from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* === Logo / Header === */
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent), #ec4899);
+      font-size: 32px;
+      margin-bottom: 16px;
+      box-shadow: 0 8px 32px rgba(138, 92, 246, 0.3);
+      animation: logoPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes logoPulse {
+
+      0%,
+      100% {
+        box-shadow: 0 8px 32px rgba(138, 92, 246, 0.3);
+      }
+
+      50% {
+        box-shadow: 0 8px 48px rgba(138, 92, 246, 0.5);
+      }
+    }
+
+    .login-header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #f0f0f5, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    .login-header p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* === Tab Switch === */
+    .auth-tabs {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      margin-bottom: 28px;
+      border: 1px solid var(--border-color);
+    }
+
+    .auth-tab {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-family: var(--font);
+    }
+
+    .auth-tab:hover {
+      color: var(--text-secondary);
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      color: white;
+      box-shadow: 0 4px 16px rgba(138, 92, 246, 0.3);
+    }
+
+    .auth-tab .material-symbols-rounded {
+      font-size: 18px;
+    }
+
+    /* === Form === */
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+
+    .form-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-input-icon {
+      position: absolute;
+      left: 14px;
+      font-size: 18px;
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px 12px 44px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-family: var(--font);
+      outline: none;
+      transition: all 0.25s ease;
+    }
+
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(138, 92, 246, 0.12);
+    }
+
+    .form-input:focus+.form-input-icon,
+    .form-input:focus~.form-input-icon {
+      color: var(--accent);
+    }
+
+    .toggle-password {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      transition: color 0.2s;
+    }
+
+    .toggle-password:hover {
+      color: var(--text-secondary);
+    }
+
+    .toggle-password .material-symbols-rounded {
+      font-size: 18px;
+    }
+
+    /* === Submit Button === */
+    .btn-submit {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #7c4dff);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(138, 92, 246, 0.3);
+      margin-top: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-submit::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255, 255, 255, 0.1));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .btn-submit:hover:not(:disabled)::before {
+      opacity: 1;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(138, 92, 246, 0.4);
+    }
+
+    .btn-submit:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn-submit.btn-teal {
+      background: linear-gradient(135deg, #2dd4bf, #0f766e);
+      box-shadow: 0 4px 20px rgba(20, 184, 166, 0.3);
+    }
+
+    .btn-submit.btn-teal:hover:not(:disabled) {
+      box-shadow: 0 8px 32px rgba(20, 184, 166, 0.4);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-submit .material-symbols-rounded {
+      font-size: 20px;
+    }
+
+    .btn-submit .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* === Alert Messages === */
+    .alert {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      animation: alertSlide 0.3s ease-out;
+    }
+
+    @keyframes alertSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert.show {
+      display: flex;
+    }
+
+    .alert .material-symbols-rounded {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .alert.success {
+      background: var(--success-bg);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+      color: var(--success);
+    }
+
+    .alert.error {
+      background: var(--error-bg);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: var(--error);
+    }
+
+    .alert.warning {
+      background: var(--warning-bg);
+      border: 1px solid rgba(251, 191, 36, 0.2);
+      color: var(--warning);
+    }
+
+    .alert.info {
+      background: rgba(96, 165, 250, 0.08);
+      border: 1px solid rgba(96, 165, 250, 0.2);
+      color: #60a5fa;
+    }
+
+    /* === License Info (after login) === */
+    .license-card {
+      display: none;
+      text-align: center;
+      animation: cardAppear 0.4s ease-out;
+    }
+
+    .license-card.show {
+      display: block;
+    }
+
+    .license-avatar {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent), #ec4899);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 16px;
+      box-shadow: 0 8px 32px rgba(138, 92, 246, 0.3);
+    }
+
+    .license-name {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .license-email {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .license-plan-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 20px;
+      border-radius: 24px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .license-plan-badge.trial {
+      background: var(--warning-bg);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      color: var(--warning);
+    }
+
+    .license-plan-badge.basic {
+      background: rgba(96, 165, 250, 0.1);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      color: #60a5fa;
+    }
+
+    .license-plan-badge.pro {
+      background: var(--accent-glow);
+      border: 1px solid rgba(138, 92, 246, 0.3);
+      color: var(--accent);
+    }
+
+    .license-plan-badge.lifetime {
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: var(--success);
+    }
+
+    .license-plan-badge.expired {
+      background: var(--error-bg);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: var(--error);
+    }
+
+    .upgrade-btn-circle {
+      display: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #10b981;
+      color: white;
+      border: none;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+      transition: all 0.25s ease;
+      animation: pulseGreenUpgrade 2s infinite;
+    }
+
+    .upgrade-btn-circle:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.6);
+    }
+
+    .upgrade-btn-circle .material-symbols-rounded {
+      font-size: 18px;
+    }
+
+    @keyframes pulseGreenUpgrade {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+      }
+
+      70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+
+    .license-expires {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .license-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 24px;
+      text-align: left;
+    }
+
+    .license-info-item {
+      padding: 12px 14px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+    }
+
+    .license-info-item .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .license-info-item .value {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .license-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .btn-enter {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--success), #059669);
+      color: white;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 20px rgba(52, 211, 153, 0.3);
+    }
+
+    .btn-enter:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(52, 211, 153, 0.4);
+    }
+
+    .btn-enter .material-symbols-rounded {
+      font-size: 20px;
+    }
+
+    .btn-secondary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 16px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--glass-border);
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .btn-secondary .material-symbols-rounded {
+      font-size: 16px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-row .btn-secondary {
+      flex: 1;
+    }
+
+    .btn-buy {
+      color: var(--warning);
+      border-color: rgba(251, 191, 36, 0.3);
+      background: rgba(251, 191, 36, 0.05);
+    }
+
+    .btn-dashboard {
+      color: #10b981;
+      border-color: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.05);
+    }
+
+    .btn-dashboard:hover {
+      border-color: #10b981;
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.15);
+    }
+
+    .btn-submit.btn-dashboard {
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+      box-shadow: none;
+    }
+
+    .btn-submit.btn-dashboard:hover:not(:disabled) {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: #10b981;
+      color: #34d399;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.15);
+    }
+
+    .btn-buy:hover {
+      border-color: var(--warning);
+      color: #fcd34d;
+      background: rgba(251, 191, 36, 0.15);
+    }
+
+    .btn-logout {
+      color: var(--error);
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.05);
+    }
+
+    .btn-logout:hover {
+      border-color: var(--error);
+      color: #f87171;
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    /* === Webhook Config Notice === */
+    .webhook-notice {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(251, 191, 36, 0.06);
+      border: 1px solid rgba(251, 191, 36, 0.15);
+      font-size: 12px;
+      color: var(--warning);
+      margin-bottom: 20px;
+    }
+
+    .webhook-notice.show {
+      display: flex;
+    }
+
+    .webhook-notice .material-symbols-rounded {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    /* === Footer === */
+    .login-footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .login-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .login-footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* === Responsive === */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 28px 24px;
+      }
+
+      .login-header h1 {
+        font-size: 20px;
+      }
+    }
+
+    /* === Update Overlay === */
+    .update-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .update-overlay.show {
+      display: flex;
+      animation: cardAppear 0.4s ease-out;
+    }
+
+    .update-card {
+      background: var(--bg-card);
+      border: 1px solid var(--accent);
+      border-radius: 24px;
+      padding: 32px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 80px rgba(138, 92, 246, 0.3);
+    }
+
+    .update-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--warning), var(--accent));
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 32px rgba(251, 191, 36, 0.3);
+    }
+
+    .update-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .update-version {
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .update-note {
+      font-size: 13px;
+      color: var(--text-secondary);
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      text-align: left;
+      max-height: 100px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Update Overlay -->
+  <div class="update-overlay" id="updateOverlay">
+    <div class="update-card" id="updateCard">
+      <div class="update-icon" id="updateIcon"><span class="material-symbols-rounded"
+          style="font-size:32px;color:white">system_update</span></div>
+      <div class="update-title" id="updateTitle">Có phiên bản Workflow mới!</div>
+      <div class="update-version" id="updateVersionText">1.0.0 ➔ 1.0.1</div>
+      <div class="update-note" id="updateNoteText"></div>
+      <!-- Force update warning (ẩn nếu không bắt buộc) -->
+      <div id="forceUpdateWarning" style="display:none;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12px;color:#ef4444;text-align:left;">
+        <strong>⚠ Cập nhật bắt buộc!</strong> Bạn phải cập nhật lên phiên bản mới mới có thể sử dụng tool. Vui lòng nhấn nút bên dưới để cập nhật ngay.
+      </div>
+      <button class="btn-submit" id="btnDoUpdate" style="margin-top:0" onclick="performAutoUpdate()">
+        <span class="material-symbols-rounded">rocket_launch</span> Bắt Đầu Tự Động Cập Nhật
+      </button>
+      <button class="btn-secondary" id="btnSkipUpdate" style="width:100%;margin-top:12px;padding:14px"
+        onclick="document.getElementById('updateOverlay').classList.remove('show')">
+        Thông báo lại sau
+      </button>
+    </div>
+  </div>
+  <!-- Pricing Overlay -->
+  <div class="update-overlay" id="pricingOverlay" onclick="if(event.target===this) this.classList.remove('show')">
+    <div style="display: flex; gap: 20px; max-width: 800px; width: 100%; justify-content: center; position: relative;">
+      <!-- Pro Plan -->
+      <div id="proPlanCard" class="update-card"
+        style="flex: 1; padding: 40px 30px; text-align: center; border-color: #8b5cf6; position: relative;">
+        <div
+          style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #8b5cf6; color: white; font-size: 10px; font-weight: 800; padding: 4px 16px; border-radius: 20px; letter-spacing: 1px;">
+          PHỔ BIẾN</div>
+
+        <h3 style="color: #a78bfa; font-size: 20px; margin-top: 0; margin-bottom: 20px;">Pro</h3>
+        <div
+          style="font-size: 40px; font-weight: 800; color: white; display: flex; align-items: baseline; justify-content: center; gap: 4px;">
+          99.000đ<span style="font-size: 14px; color: var(--text-muted); font-weight: 500;">/30 ngày</span>
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 30px; margin-top: 10px;">Kích hoạt trong
+          30 ngày</div>
+
+        <div style="text-align: left; display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Tất cả tính
+            năng
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Không giới hạn
+            prompt
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Batch
+            processing
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Hỗ trợ ưu tiên
+          </div>
+        </div>
+
+        <button class="btn-submit"
+          style="background: #8b5cf6; border: none; width: 100%; border-radius: 12px; margin: 0; padding: 14px 24px; font-size: 14px; box-shadow: 0 4px 20px rgba(138, 92, 246, 0.4);"
+          onclick="openPurchasePage()">Mua Pro — 99.000đ</button>
+      </div>
+
+      <!-- Lifetime Plan -->
+      <div class="update-card" style="flex: 1; padding: 40px 30px; text-align: center; border-color: #10b981;">
+        <h3 style="color: #34d399; font-size: 20px; margin-top: 0; margin-bottom: 20px;">Lifetime</h3>
+        <div
+          style="font-size: 40px; font-weight: 800; color: white; display: flex; align-items: baseline; justify-content: center; gap: 4px;">
+          1.900.000đ
+        </div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 30px; margin-top: 10px;">Trả 1 lần, dùng
+          mãi mãi</div>
+
+        <div style="text-align: left; display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Tất cả tính
+            năng Pro
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Không bao giờ
+            hết hạn
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Updates miễn
+            phí
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: #e2e8f0;">
+            <span class="material-symbols-rounded" style="color: #10b981; font-size: 18px;">check</span> Hỗ trợ VIP
+          </div>
+        </div>
+
+        <button class="btn-submit"
+          style="background: #10b981; border: none; width: 100%; border-radius: 12px; margin: 0; padding: 14px 24px; font-size: 14px; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);"
+          onclick="openPurchasePage()">Mua Lifetime — 1.900.000đ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="login-container">
+    <div class="login-card">
+      <!-- Header -->
+      <div class="login-header">
+        <div class="login-logo">🎬</div>
+        <h1>Workflow AI Giá Rẻ</h1>
+        <p>Đăng nhập để sử dụng tool</p>
+      </div>
+
+      <!-- Webhook not configured notice -->
+      <div class="webhook-notice" id="webhookNotice">
+        <span class="material-symbols-rounded">warning</span>
+        <div>
+          <strong>Webhook chưa được cấu hình.</strong><br>
+          Hãy cập nhật <code>auth-config.json</code> với URL server của bạn.
+        </div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert" id="alertBox">
+        <span class="material-symbols-rounded" id="alertIcon">info</span>
+        <span id="alertText"></span>
+      </div>
+
+      <!-- Verify Email Card (popup không tắt được sau khi đăng ký / login acc chưa verify) -->
+      <div id="verifyCard" style="display:none; text-align:center; padding:28px 20px;">
+        <div style="font-size:52px; margin-bottom:14px; line-height:1;">📬</div>
+        <h3 style="font-size:18px; font-weight:700; color:#fff; margin:0 0 8px;">Kiểm tra hộp thư!</h3>
+        <p style="font-size:13px; color:rgba(255,255,255,0.65); line-height:1.65; margin:0 0 10px;">
+          Chúng tôi đã gửi link xác thực tới
+        </p>
+        <div id="verifyEmailDisplay" style="font-size:13px; font-weight:700; color:#a78bfa;
+          word-break:break-all; padding:8px 12px; border-radius:8px;
+          background:rgba(167,139,250,0.1); border:1px solid rgba(167,139,250,0.3);
+          margin-bottom:14px;"></div>
+        <p id="verifyNote" style="font-size:12px; color:rgba(255,255,255,0.45); line-height:1.6; margin:0 0 20px;">
+          Nhấn link trong email để kích hoạt tài khoản.<br>
+          Không thấy? Kiểm tra <strong style="color:rgba(255,255,255,0.65)">Spam / Junk</strong>.
+        </p>
+        <button id="btnResend" onclick="resendVerify()" style="padding:9px 24px;
+          background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff;
+          border:none; border-radius:10px; font-size:13px; font-weight:600;
+          cursor:pointer; transition:opacity .2s; margin-bottom:10px;"
+          onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          📨 Gửi lại email
+        </button>
+        <p id="resendMsg" style="font-size:12px; color:#10b981; margin:0; min-height:18px;"></p>
+      </div>
+
+
+      <div id="authForms">
+        <!-- Tabs -->
+        <div class="auth-tabs">
+          <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">
+            <span class="material-symbols-rounded">login</span>
+            Đăng nhập
+          </button>
+          <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">
+            <span class="material-symbols-rounded">person_add</span>
+            Đăng ký
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="form-input-wrap">
+              <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com" required
+                autocomplete="email">
+              <span class="material-symbols-rounded form-input-icon">mail</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu</label>
+            <div class="form-input-wrap">
+              <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required
+                autocomplete="current-password">
+              <span class="material-symbols-rounded form-input-icon">lock</span>
+              <button type="button" class="toggle-password" onclick="togglePasswordVisibility('loginPassword', this)">
+                <span class="material-symbols-rounded">visibility_off</span>
+              </button>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="btnLogin">
+            <span class="material-symbols-rounded">login</span>
+            Đăng nhập
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label class="form-label">Tên hiển thị</label>
+            <div class="form-input-wrap">
+              <input type="text" class="form-input" id="registerName" placeholder="Nguyễn Văn A" required>
+              <span class="material-symbols-rounded form-input-icon">person</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <div class="form-input-wrap">
+              <input type="email" class="form-input" id="registerEmail" placeholder="you@gmail.com" required
+                autocomplete="email" pattern="[a-zA-Z0-9._%+\-]+@gmail\.com">
+              <span class="material-symbols-rounded form-input-icon">mail</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mật khẩu</label>
+            <div class="form-input-wrap">
+              <input type="password" class="form-input" id="registerPassword" placeholder="Tối thiểu 6 ký tự" required
+                minlength="6">
+              <span class="material-symbols-rounded form-input-icon">lock</span>
+              <button type="button" class="toggle-password"
+                onclick="togglePasswordVisibility('registerPassword', this)">
+                <span class="material-symbols-rounded">visibility_off</span>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Xác nhận mật khẩu</label>
+            <div class="form-input-wrap">
+              <input type="password" class="form-input" id="registerPasswordConfirm" placeholder="Nhập lại mật khẩu"
+                required minlength="6">
+              <span class="material-symbols-rounded form-input-icon">lock</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số điện thoại <span style="color:#ef4444;font-size:12px;">(*)</span></label>
+            <div class="form-input-wrap">
+              <input type="tel" class="form-input" id="registerPhone" placeholder="0912345678"
+                maxlength="10" minlength="10" required pattern="\d{10}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)">
+              <span class="material-symbols-rounded form-input-icon">phone</span>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit" id="btnRegister">
+            <span class="material-symbols-rounded">person_add</span>
+            Đăng ký tài khoản
+          </button>
+        </form>
+      </div>
+
+      <!-- License Info (shown when logged in) -->
+      <div class="license-card" id="licenseCard">
+        <div class="license-avatar" id="licenseAvatar">👤</div>
+        <div class="license-name" id="licenseName">—</div>
+        <div class="license-email" id="licenseEmail">—</div>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px;">
+          <div class="license-plan-badge trial" id="licensePlanBadge"
+            style="position: relative; transition: all 0.2s; margin-bottom: 0;"></div>
+          <button id="upgradeBtn" class="upgrade-btn-circle" title="Nâng cấp gói">
+            <span class="material-symbols-rounded">arrow_upward</span>
+          </button>
+        </div>
+        <div class="license-expires" id="licenseExpires">—</div>
+
+        <div class="license-info-grid">
+          <div class="license-info-item">
+            <div class="label">Trạng thái</div>
+            <div class="value" id="licenseStatus">Đang hoạt động</div>
+          </div>
+          <div class="license-info-item">
+            <div class="label">HWID</div>
+            <div class="value" id="licenseHwid" style="font-size:10px; word-break:break-all;">—</div>
+          </div>
+        </div>
+
+        <div class="license-actions">
+          <button class="btn-enter" id="btnEnterTool" onclick="enterTool()">
+            <span class="material-symbols-rounded">rocket_launch</span>
+            Vào Tool
+          </button>
+          <div class="btn-row">
+            <button class="btn-secondary btn-dashboard"
+              onclick="openExternalBrowser('https://workflowgiare.com/dashboard')">
+              <span class="material-symbols-rounded">dashboard</span>
+              Trang Quản Trị
+            </button>
+            <button class="btn-secondary btn-logout" onclick="handleLogout()">
+              <span class="material-symbols-rounded">logout</span>
+              Đăng xuất
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="login-footer" style="margin-top: 16px;">
+        <div class="btn-row">
+          <button class="btn-submit btn-teal" onclick="openExternalBrowser('https://workflowgiare.com')"
+            style="width: 100%; margin-top: 0;">
+            <span class="material-symbols-rounded">home</span>
+            Main Page
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // === Auth State ===
+    let authStatus = null;
+
+    // === Tab Switch ===
+    function switchAuthTab(tab) {
+      document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+      document.getElementById('loginForm').classList.toggle('active', tab === 'login');
+      document.getElementById('registerForm').classList.toggle('active', tab === 'register');
+      hideAlert();
+    }
+
+    // === Alert ===
+    function showAlert(msg, type = 'info') {
+      const box = document.getElementById('alertBox');
+      const icon = document.getElementById('alertIcon');
+      const text = document.getElementById('alertText');
+      const icons = { success: 'check_circle', error: 'error', warning: 'warning', info: 'info' };
+      box.className = 'alert show ' + type;
+      icon.textContent = icons[type] || 'info';
+      text.textContent = msg;
+    }
+    function hideAlert() {
+      document.getElementById('alertBox').className = 'alert';
+    }
+
+    // Hiện verify card đẹp, ẩn form, lưu email để resend
+    let _verifyEmail = '';
+    let _verifyPollTimer = null;
+
+    function stopVerifyPolling() {
+      if (_verifyPollTimer) { clearInterval(_verifyPollTimer); _verifyPollTimer = null; }
+    }
+
+    function startVerifyPolling() {
+      stopVerifyPolling();
+      _verifyPollTimer = setInterval(async () => {
+        try {
+          const res = await fetch('/api/auth/session-check');
+          const data = await res.json();
+          // Đã verify thành công → dừng poll, ẩn verify card, hiện license
+          if (data.valid === true) {
+            stopVerifyPolling();
+            document.getElementById('verifyCard').style.display = 'none';
+            // Gọi lại verify để lấy user info đầy đủ
+            const verifyRes = await fetch('/api/auth/verify', { method: 'POST' });
+            const verifyData = await verifyRes.json();
+            if (verifyData.valid && verifyData.user) {
+              showAlert('✅ Email xác thực thành công! Chào mừng bạn.', 'success');
+              // Ẩn authForms trước khi show licenseCard
+              document.getElementById('authForms').style.display = 'none';
+              const footer = document.querySelector('.login-footer');
+              if (footer) footer.style.display = 'none';
+              setTimeout(() => showLicenseInfo(verifyData.user), 600);
+            }
+          }
+        } catch (e) { /* bỏ qua lỗi mạng tạm thời */ }
+      }, 5000); // poll mỗi 5 giây
+    }
+
+    function showVerifyCard(email, fromLogin = false) {
+      _verifyEmail = email || '';
+      // Đảm bảo authForms hiển thị (kể cả khi user đã login — authForms bị ẩn)
+      document.getElementById('authForms').style.display = 'block';
+      // Ẩn licenseCard nếu đang show (trường hợp đã login rồi mới bị force verify)
+      document.getElementById('licenseCard').classList.remove('show');
+      document.getElementById('alertBox').className = 'alert';
+      const card = document.getElementById('verifyCard');
+      card.style.display = 'block';
+      document.getElementById('verifyEmailDisplay').textContent = email || '';
+      document.getElementById('resendMsg').textContent = '';
+      document.getElementById('btnResend').disabled = false;
+      if (fromLogin) {
+        document.getElementById('verifyNote').innerHTML =
+          'Tài khoản chưa được xác thực.<br>Nhấn link trong email hoặc kiểm tra <strong style="color:rgba(255,255,255,0.65)">Spam / Junk</strong>.';
+      } else {
+        document.getElementById('verifyNote').innerHTML =
+          'Nhấn link trong email để kích hoạt tài khoản.<br>Không thấy? Kiểm tra <strong style="color:rgba(255,255,255,0.65)">Spam / Junk</strong>.';
+      }
+      // Bắt đầu tự động polling để phát hiện khi user đã verify email
+      startVerifyPolling();
+    }
+    function resetToLogin() {
+      document.getElementById('verifyCard').style.display = 'none';
+      document.getElementById('authForms').style.display = 'block';
+      switchAuthTab('login');
+    }
+    // Nút Gửi lại email — cooldown 60 giây
+    let _resendCooldown = 0;
+    async function resendVerify() {
+      if (_resendCooldown > 0) return;
+      const btn = document.getElementById('btnResend');
+      const msg = document.getElementById('resendMsg');
+      btn.disabled = true;
+      msg.style.color = '#a78bfa';
+      msg.textContent = 'Đang gửi...';
+      try {
+        const res = await fetch('/api/web/resend-verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: _verifyEmail })
+        });
+        const data = await res.json();
+        if (data.success) {
+          msg.style.color = '#10b981';
+          msg.textContent = '✅ Đã gửi! Kiểm tra hộp thư của bạn.';
+          // Cooldown 60s
+          _resendCooldown = 60;
+          const iv = setInterval(() => {
+            _resendCooldown--;
+            btn.textContent = `⏳ Gửi lại (${_resendCooldown}s)`;
+            if (_resendCooldown <= 0) {
+              clearInterval(iv);
+              btn.disabled = false;
+              btn.textContent = '📨 Gửi lại email';
+            }
+          }, 1000);
+        } else {
+          msg.style.color = '#ef4444';
+          msg.textContent = data.error || 'Gửi thất bại';
+          btn.disabled = false;
+        }
+      } catch(e) {
+        msg.style.color = '#ef4444';
+        msg.textContent = 'Lỗi kết nối server';
+        btn.disabled = false;
+      }
+    }
+
+    // === Toggle Password ===
+    function togglePasswordVisibility(inputId, btn) {
+      const input = document.getElementById(inputId);
+      const icon = btn.querySelector('.material-symbols-rounded');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility_off';
+      }
+    }
+
+    // === Set Button Loading ===
+    function setLoading(btnId, loading) {
+      const btn = document.getElementById(btnId);
+      btn.disabled = loading;
+      if (loading) {
+        btn.dataset.originalHtml = btn.innerHTML;
+        btn.innerHTML = '<div class="spinner"></div> Đang xử lý...';
+      } else if (btn.dataset.originalHtml) {
+        btn.innerHTML = btn.dataset.originalHtml;
+      }
+    }
+
+    // === Login ===
+    async function handleLogin(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      if (!email || !password) {
+        showAlert('Vui lòng nhập đầy đủ email và mật khẩu', 'warning');
+        return;
+      }
+
+      setLoading('btnLogin', true);
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showAlert(data.message || 'Đăng nhập thành công!', 'success');
+          setTimeout(() => showLicenseInfo(data.user), 800);
+        } else if (data.needVerify) {
+          // Lấy email từ form để hiển thị trong card
+          const email = document.getElementById('loginEmail').value.trim();
+          showVerifyCard(email, true);
+        } else {
+          showAlert(data.error || 'Đăng nhập thất bại', 'error');
+        }
+      } catch (err) {
+        showAlert('Lỗi kết nối server: ' + err.message, 'error');
+      } finally {
+        setLoading('btnLogin', false);
+      }
+    }
+
+    // === Register ===
+    async function handleRegister(e) {
+      e.preventDefault();
+      hideAlert();
+
+      const name = document.getElementById('registerName').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
+      const password = document.getElementById('registerPassword').value;
+      const confirm = document.getElementById('registerPasswordConfirm').value;
+      const phone = document.getElementById('registerPhone').value.trim();
+
+      if (!name || !email || !password) {
+        showAlert('Vui lòng nhập đầy đủ thông tin', 'warning');
+        return;
+      }
+
+      if (!phone || phone.replace(/\D/g, '').length < 10) {
+        showAlert('Vui lòng nhập số điện thoại hợp lệ (10 số)', 'warning');
+        return;
+      }
+
+      if (!email.endsWith('@gmail.com')) {
+        showAlert('Chỉ chấp nhận email @gmail.com', 'error');
+        return;
+      }
+
+      if (password !== confirm) {
+        showAlert('Mật khẩu xác nhận không khớp', 'error');
+        return;
+      }
+
+      if (password.length < 6) {
+        showAlert('Mật khẩu phải có tối thiểu 6 ký tự', 'warning');
+        return;
+      }
+
+      setLoading('btnRegister', true);
+
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, name, phone: phone.replace(/\D/g, '') })
+        });
+        const data = await res.json();
+
+        if (data.success && data.needVerify) {
+          // Ẩn form đăng ký, hiện card verify đẹp
+          const email = document.getElementById('registerEmail').value.trim();
+          showVerifyCard(email, false);
+        } else if (data.success) {
+          showAlert(data.message || 'Đăng ký thành công!', 'success');
+          setTimeout(() => showLicenseInfo(data.user), 800);
+        } else {
+          showAlert(data.error || 'Đăng ký thất bại', 'error');
+        }
+      } catch (err) {
+        showAlert('Lỗi kết nối server: ' + err.message, 'error');
+      } finally {
+        setLoading('btnRegister', false);
+      }
+    }
+
+    // === Logout ===
+    async function handleLogout() {
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+      } catch { }
+      document.getElementById('licenseCard').classList.remove('show');
+      document.getElementById('authForms').style.display = '';
+
+      const footer = document.querySelector('.login-footer');
+      if (footer) footer.style.display = 'block';
+
+      hideAlert();
+    }
+
+    // === Show License Info ===
+    function showLicenseInfo(user) {
+      if (!user) return;
+
+      document.getElementById('authForms').style.display = 'none';
+
+      const footer = document.querySelector('.login-footer');
+      if (footer) footer.style.display = 'none';
+
+      hideAlert();
+
+      document.getElementById('licenseName').textContent = user.name || user.email || '—';
+      document.getElementById('licenseEmail').textContent = user.email || '—';
+
+      const plan = (user.plan || 'trial').toLowerCase();
+      const badge = document.getElementById('licensePlanBadge');
+      const upgradeBtn = document.getElementById('upgradeBtn');
+      badge.className = 'license-plan-badge ' + plan;
+
+      let badgeHtml = `<span class="material-symbols-rounded" style="font-size: 16px;">workspace_premium</span> <span id="licensePlan">${plan.toUpperCase()}</span>`;
+      badge.innerHTML = badgeHtml;
+
+      badge.style.cursor = 'default';
+      badge.onclick = null;
+
+      if (plan === 'lifetime') {
+        if (upgradeBtn) upgradeBtn.style.display = 'none';
+      } else {
+        if (upgradeBtn) {
+          upgradeBtn.style.display = 'flex';
+          upgradeBtn.onclick = () => {
+            document.getElementById('pricingOverlay').classList.add('show');
+            if (plan === 'pro') {
+              document.getElementById('proPlanCard').style.display = 'none';
+            } else {
+              document.getElementById('proPlanCard').style.display = 'block';
+            }
+          };
+        }
+      }
+
+      if (user.expires_at) {
+        const exp = new Date(user.expires_at);
+        const now = new Date();
+        const daysLeft = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+        if (daysLeft > 0) {
+          document.getElementById('licenseExpires').textContent =
+            `Hết hạn: ${exp.toLocaleDateString('vi-VN')} (còn ${daysLeft} ngày)`;
+        } else {
+          document.getElementById('licenseExpires').textContent = 'Đã hết hạn!';
+          badge.className = 'license-plan-badge expired';
+        }
+      } else {
+        document.getElementById('licenseExpires').textContent = plan === 'lifetime' ? 'Vĩnh viễn' : '—';
+      }
+
+      document.getElementById('licenseStatus').textContent = 'Đang hoạt động';
+
+      // Disable enter button if expired
+      const isExpired = user.expires_at && new Date(user.expires_at) < new Date();
+      const btnEnter = document.getElementById('btnEnterTool');
+      btnEnter.disabled = isExpired;
+      if (isExpired) {
+        btnEnter.style.opacity = '0.4';
+        btnEnter.style.cursor = 'not-allowed';
+        document.getElementById('licenseStatus').textContent = 'Đã hết hạn';
+        document.getElementById('licenseStatus').style.color = '#ef4444';
+      }
+
+      document.getElementById('licenseCard').classList.add('show');
+    }
+
+    // === Enter Tool ===
+    function enterTool() {
+      window.location.href = '/';
+    }
+
+    // === Open External Browser ===
+    function openExternalBrowser(url) {
+      fetch('/api/open-browser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+      })
+        .then(res => { if (!res.ok) throw new Error('API Error'); })
+        .catch(err => {
+          console.error('Lỗi mở trình duyệt:', err);
+          window.open(url, '_blank');
+        });
+    }
+
+    // === Open Purchase Page (Using Default OS Browser) ===
+    function openPurchasePage() {
+      // Lấy purchase URL từ auth config
+      fetch('/api/auth/config').then(r => r.json()).then(data => {
+        let targetUrl = '';
+
+        if (data.purchaseUrl) {
+          targetUrl = data.purchaseUrl;
+        } else if (data.webhookBaseUrl) {
+          // Fallback: mở base URL
+          targetUrl = data.webhookBaseUrl.replace(/\/api\/veo3\/?$/, '');
+        } else {
+          alert('Chưa cấu hình trang mua hàng. Liên hệ quản trị viên.');
+          return;
+        }
+
+        // Gửi yêu cầu xuống backend để mở trình duyệt mặc định của máy tính
+        fetch('/api/open-browser', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: targetUrl })
+        })
+          .then(res => { if (!res.ok) throw new Error('API Error'); })
+          .catch(err => {
+            console.error('Lỗi mở trình duyệt:', err);
+            // Fallback dự phòng nếu API lỗi
+            window.open(targetUrl, '_blank');
+          });
+
+      }).catch(() => {
+        alert('Không lấy được thông tin. Liên hệ quản trị viên.');
+      });
+    }
+
+    // === Init: Check auth status ===
+    async function checkAuthStatus() {
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+
+        // Check webhook config
+        if (data.webhookConfigured === false) {
+          document.getElementById('webhookNotice').classList.add('show');
+        }
+
+        if (data.loggedIn && data.user) {
+          // Already logged in — verify license
+          const verifyRes = await fetch('/api/auth/verify', { method: 'POST' });
+          const verifyData = await verifyRes.json();
+
+          if (verifyData.valid) {
+            showLicenseInfo(verifyData.user || data.user);
+            if (verifyData.message) {
+              showAlert(verifyData.message, 'info');
+            }
+          } else if (verifyData.needVerify) {
+            // Email chưa xác thực — hiện verify card giống flow đăng ký
+            const email = verifyData.email || (data.user && data.user.email) || '';
+            showVerifyCard(email, false);
+          } else {
+            // License hết hạn hoặc invalid
+            showAlert(verifyData.error || 'License không hợp lệ. Vui lòng đăng nhập lại.', 'warning');
+            if (verifyData.expired && data.user) {
+              showLicenseInfo({ ...data.user, expires_at: new Date(Date.now() - 1).toISOString() });
+            }
+          }
+        }
+
+        // Check HWID
+        if (data.hwid) {
+          document.getElementById('licenseHwid').textContent = data.hwid;
+        }
+      } catch (err) {
+        console.error('Check auth error', err);
+      }
+
+      // Auto Update Check (Cuối cùng lúc khởi động)
+      checkUpdate();
+    }
+
+    // === Update Engine (server-based — chỉ thông báo, không bắt buộc) ===
+    let pendingUpdateUrl = '';
+    async function checkUpdate() {
+      try {
+        const res = await fetch('/api/check-update');
+        const data = await res.json();
+        if (data.success && data.has_update) {
+          pendingUpdateUrl = data.update_url;
+          document.getElementById('updateVersionText').textContent =
+            `Phiên bản hiện tại: ${data.current_version} ➔ Mới: ${data.latest_version}`;
+          document.getElementById('updateNoteText').textContent =
+            data.update_note || 'Nhiều tính năng mới đã được cập nhật!';
+          document.getElementById('updateOverlay').classList.add('show');
+        }
+      } catch (e) {
+        console.error('Check update failed', e);
+      }
+    }
+
+    async function performAutoUpdate() {
+      if (!pendingUpdateUrl) {
+        alert('Lỗi: Cấu hình chưa gắn Link Tải Update trên máy chủ!');
+        return;
+      }
+      const btn = document.getElementById('btnDoUpdate');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Hệ thống đang Cập Nhật...';
+      try {
+        const res = await fetch('/api/auto-update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: pendingUpdateUrl })
+        });
+        const data = await res.json();
+        if (data.success) {
+          btn.innerHTML = '✅ Tải xong! Đang Restart Code...';
+          document.getElementById('updateNoteText').textContent = "Tiến trình Updater ngầm đang hoạt động. Vui lòng chờ vài giây để hệ thống tự tắt và bật lên lại. Không được tắt nóng Chrome!";
+        }
+      } catch (err) {
+        alert('Lỗi Update: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-rounded">rocket_launch</span> Bắt Đầu Tự Động Cập Nhật';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', checkAuthStatus);
+  </script>
+</body>
+
+</html>

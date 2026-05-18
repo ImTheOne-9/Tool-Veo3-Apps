@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>VEO3 Captcha Solver</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+
+<div class="header">
+  <span class="icon">🔓</span>
+  <h1>VEO3 Captcha Solver</h1>
+</div>
+
+<div class="status-row">
+  <div class="dot gray" id="server-dot"></div>
+  <span class="label">Captcha Server</span>
+  <span class="value" id="server-status">Checking...</span>
+</div>
+
+<div class="status-row">
+  <div class="dot gray" id="page-dot"></div>
+  <span class="label">Page</span>
+  <span class="value" id="page-status">Unknown</span>
+</div>
+
+<button class="btn" id="btn-test">🧪 Test Captcha</button>
+<button class="btn secondary" id="btn-refresh">🔄 Force Refresh</button>
+
+<div class="footer">
+  labs.google/fx/vi/tools/flow → port 3001
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,2213 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workflow AI Giá Rẻ — Studio</title>
+  <meta name="description" content="Công cụ tự động hóa tạo video VEO3 trên Google Flow">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0">
+</head>
+
+<body>
+  <!-- ═══ FORCE UPDATE OVERLAY (blocking — không có nút đóng) ═══ -->
+  <div id="forceUpdateOverlay" style="
+    display:none; position:fixed; inset:0; z-index:99999;
+    background:rgba(0,0,0,0.93); backdrop-filter:blur(16px);
+    align-items:center; justify-content:center; flex-direction:column;
+    font-family:'Inter',sans-serif; text-align:center; padding:24px;
+  ">
+    <div style="
+      background:#161628; border:2px solid #22c55e;
+      border-radius:24px; padding:40px 36px; max-width:460px; width:100%;
+      box-shadow:0 0 60px rgba(34,197,94,0.25),0 20px 80px rgba(0,0,0,0.6);
+    ">
+      <div style="
+        width:72px; height:72px; border-radius:20px; margin:0 auto 20px;
+        background:linear-gradient(135deg,#22c55e,#16a34a);
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:0 8px 32px rgba(34,197,94,0.4); font-size:36px;
+      ">🚀</div>
+      <div style="font-size:22px;font-weight:800;color:white;margin-bottom:8px;">
+        Cập nhật bắt buộc!
+      </div>
+      <div id="forceUpdateVersionText" style="font-size:13px;color:#4ade80;font-weight:600;margin-bottom:16px;"></div>
+      <div id="forceUpdateNote" style="
+        font-size:13px;color:#a0a0b8;background:rgba(0,0,0,0.3);
+        padding:12px;border-radius:10px;margin-bottom:24px;
+        text-align:left;max-height:100px;overflow-y:auto;white-space:pre-wrap;
+      ">Phiên bản mới có sửa lỗi và tính năng quan trọng. Vui lòng cập nhật để tiếp tục sử dụng.</div>
+      <div style="font-size:12px;color:#6b7280;margin-bottom:20px;">
+        ✨ Bạn không thể tiếp tục sử dụng tool cho đến khi cập nhật.
+      </div>
+      <button id="btnForceUpdate" onclick="doForceUpdate()" style="
+        width:100%; padding:15px 24px; border:none; border-radius:12px;
+        background:linear-gradient(135deg,#22c55e,#16a34a); color:white;
+        font-size:15px; font-weight:700; cursor:pointer;
+        display:flex; align-items:center; justify-content:center; gap:8px;
+        box-shadow:0 4px 20px rgba(34,197,94,0.4); font-family:'Inter',sans-serif;
+      ">
+        <span class="material-symbols-rounded">system_update_alt</span>
+        Cài Đặt Ngay &amp; Khởi Động Lại
+      </button>
+    </div>
+  </div>
+
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <div class="app-v2">
+    <!-- ═══ Top Nav Bar ═══ -->
+    <nav class="topnav">
+      <div class="topnav-left">
+        <div class="topnav-logo">🎬</div>
+        <span class="topnav-title">Workflow AI Giá Rẻ</span>
+        <div class="topnav-divider"></div>
+        <!-- Page Tabs -->
+        <button class="topnav-tab active" onclick="switchTab('prompt')" id="tabPrompt">
+          <span class="material-symbols-rounded">edit_note</span>
+          Prompt
+        </button>
+        <button class="topnav-tab" onclick="switchTab('builder')" id="tabBuilder">
+          <span class="material-symbols-rounded">hub</span>
+          Builder
+        </button>
+        <button class="topnav-tab" onclick="switchTab('store')" id="tabStore" style="position: relative;">
+          <span class="material-symbols-rounded">storefront</span>
+          Store
+        </button>
+      </div>
+      <div class="topnav-right">
+        <button onclick="openExternalBrowser('https://workflowgiare.com/')" title="Trở về Trang Chủ"
+          style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #e0e0f0; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: all 0.2s; white-space: nowrap; font-family: inherit;"
+          onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+          onmouseout="this.style.background='rgba(255,255,255,0.06)'">
+          <span class="material-symbols-rounded" style="font-size: 16px;">home</span>
+          Main Page
+        </button>
+
+        <div id="userBadge" class="conn-badge" style="display:none; cursor:pointer;" onclick="openAccountModal()"
+          title="Thông tin tài khoản & Nâng cấp">
+          <span class="material-symbols-rounded" style="font-size:14px;">person</span>
+          <span id="userName"
+            style="max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span>
+          <span id="userPlanBadge"
+            style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;background:rgba(138,92,246,0.2);color:#a78bfa;">—</span>
+        </div>
+
+        <div id="connectionStatus" class="conn-badge disconnected">
+          <span class="conn-dot"></span>
+          <span id="connectionText">Chưa kết nối</span>
+        </div>
+        <button class="topnav-btn" onclick="toggleConnectPanel()" title="Kết nối Chrome">
+          <span class="material-symbols-rounded">link</span>
+        </button>
+        <button class="topnav-btn" onclick="openSettingsModal()" id="btnSettingsModal" title="Cài đặt hệ thống">
+          <span class="material-symbols-rounded">settings</span>
+        </button>
+        <button class="topnav-btn" onclick="handleLogoutFromTool()" id="btnLogout" title="Đăng xuất"
+          style="display:none;">
+          <span class="material-symbols-rounded">logout</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- ═══ Connection Panel (Overlay) ═══ -->
+    <div id="connectPanel" class="overlay-panel" style="display: none;">
+      <div class="overlay-panel-inner" style="min-width:340px; max-width:480px;">
+        <div class="overlay-panel-header">
+          <h3><span class="material-symbols-rounded">link</span> Kết nối Chrome</h3>
+          <button class="overlay-close" onclick="toggleConnectPanel()">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <div class="connect-content" style="padding-top:10px;">
+
+          <!-- ── Status bar ── -->
+          <div id="poolStatusBar"
+            style="display:none; align-items:center; gap:8px; padding:8px 12px; background:rgba(52,211,153,0.07); border:1px solid rgba(52,211,153,0.2); border-radius:8px; margin-bottom:10px; font-size:11px; color:var(--text-muted);">
+            <span class="material-symbols-rounded" style="font-size:15px; color:#34d399;">hub</span>
+            <span id="poolStatusText">Đang sử dụng: Account 1</span>
+            <span id="poolSwitchCount" style="margin-left:auto; opacity:0.6;"></span>
+          </div>
+
+          <!-- ── Dynamic tab row (rendered by JS) ── -->
+          <div id="poolTabRow" style="display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; align-items:center;">
+            <!-- tabs injected by loadCookiePool() -->
+            <button class="pool-tab pool-add-btn" onclick="addCookieSlot()" title="Thêm tài khoản mới">
+              <span class="material-symbols-rounded" style="font-size:14px;">add</span>
+            </button>
+          </div>
+
+          <!-- ── Dynamic slot panel (rendered by JS) ── -->
+          <div id="poolSlotContainer">
+            <!-- slot panel injected by loadCookiePool() -->
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ Settings Modal (Popup) ═══ -->
+    <div id="settingsModal" class="modal-overlay" style="display:none;"
+      onclick="if(event.target===this) closeSettingsModal()">
+      <div class="modal-panel">
+        <div class="modal-header" style="flex-direction:column; align-items:stretch; padding-bottom:0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 style="margin:0;"><span class="material-symbols-rounded">settings</span> Cài đặt hệ thống</h3>
+            <button class="overlay-close" onclick="closeSettingsModal()">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+          <div style="display:flex; gap:20px; font-size:13px; font-weight:600; padding-left:10px; margin-bottom:-1px;">
+            <div id="tabSettingsChung" onclick="switchSettingsTab('chung')" style="padding-bottom:12px; cursor:pointer; color:#a78bfa; border-bottom:2px solid #8b5cf6; transition:all 0.2s; display:flex; align-items:center; gap:6px;">
+              <span class="material-symbols-rounded" style="font-size:16px;">tune</span> Cấu hình chung
+            </div>
+            <div id="tabSettingsExt" onclick="switchSettingsTab('ext')" style="padding-bottom:12px; cursor:pointer; color:var(--text-muted); border-bottom:2px solid transparent; transition:all 0.2s; display:flex; align-items:center; gap:6px;">
+              <span class="material-symbols-rounded" style="font-size:16px;">extension</span> Extension Captcha
+            </div>
+          </div>
+        </div>
+        <div class="modal-body" id="bodySettingsChung">
+          <!-- Gemini API Key -->
+          <div class="setting-group">
+            <label class="setting-label">🔑 Gemini API Key (<a href="https://aistudio.google.com/app/apikey"
+                target="_blank" style="color:#84cc16;text-decoration:underline">Lấy Key Free</a>)</label>
+            <input type="password" id="globalGeminiKey" class="setting-input" placeholder="AIzaSy..."
+              onchange="if(typeof saveGeminiApiKey==='function') saveGeminiApiKey(this.value)">
+            <span style="font-size:10px;color:var(--text-muted);">Key được lưu trên trình duyệt, không gửi lên
+              server.</span>
+          </div>
+
+          <div style="height:1px;background:var(--border-color);margin:4px 0;"></div>
+          <div class="setting-group">
+            <label class="setting-label">URL Project Flow</label>
+            <input type="text" id="projectUrl" class="setting-input" placeholder="https://labs.google/fx/vi/tools/flow/"
+              value="https://labs.google/fx/vi/tools/flow/">
+          </div>
+
+          <!-- Thư mục lưu -->
+          <div class="setting-group">
+            <label class="setting-label">📁 Thư mục lưu</label>
+            <div style="display:flex;gap:5px;">
+              <input type="text" id="downloadDir" class="setting-input" placeholder="D:\downloads\veo3"
+                style="flex:1;min-width:0;">
+              <button class="btn" onclick="selectFolderDialog()" title="Chọn thư mục"
+                style="padding:6px 8px;flex-shrink:0;">
+                <span class="material-symbols-rounded" style="font-size:15px;">folder_open</span>
+              </button>
+              <button class="btn" onclick="updateDownloadDir()" title="Lưu" style="padding:6px 8px;flex-shrink:0;">
+                <span class="material-symbols-rounded" style="font-size:15px;">save</span>
+              </button>
+            </div>
+          </div>
+          <!-- Delay & Wait -->
+          <div class="modal-2col">
+            <div class="setting-group">
+              <label class="setting-label">Chờ giữa prompt (giây)</label>
+              <input type="number" id="delayBetween" class="setting-input" value="5" min="1" max="120">
+            </div>
+            <div class="setting-group">
+              <label class="setting-label">Chờ tối đa (giây)</label>
+              <input type="number" id="waitForGeneration" class="setting-input" value="300" min="30" max="600">
+            </div>
+          </div>
+
+          <div style="height:1px;background:var(--border-color);margin:8px 0;"></div>
+
+          <!-- ─── Captcha Mode ─── -->
+          <div class="setting-group" id="captchaModeGroup">
+            <label class="setting-label" style="display:flex;align-items:center;gap:6px;">
+              <span class="material-symbols-rounded" style="font-size:15px;color:#a78bfa;">security</span>
+              Chế độ Captcha
+              <!-- Live status badge -->
+              <span id="captchaStatusBadge" style="
+                margin-left:auto; font-size:9px; font-weight:700; padding:2px 8px;
+                border-radius:20px; background:rgba(255,255,255,0.07);
+                color:rgba(255,255,255,0.4); white-space:nowrap; transition:all 0.3s;
+              ">…</span>
+            </label>
+
+            <!-- Mode toggle buttons -->
+            <div style="display:flex;gap:6px;margin-top:4px;">
+              <button id="captchaModeAuto" onclick="setCaptchaMode('auto')" style="
+                flex:1; padding:8px 10px; border-radius:10px; border:1.5px solid rgba(138,92,246,0.5);
+                background:rgba(138,92,246,0.15); color:#c4b5fd; font-size:12px; font-weight:600;
+                cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+                transition:all 0.2s; font-family:inherit;
+              ">
+                <span class="material-symbols-rounded" style="font-size:15px;">laptop</span>
+                Auto (Brave)
+              </button>
+              <button id="captchaModeRealChrome" onclick="setCaptchaMode('real_chrome')" style="
+                flex:1; padding:8px 10px; border-radius:10px; border:1.5px solid rgba(255,255,255,0.1);
+                background:rgba(255,255,255,0.04); color:rgba(255,255,255,0.5); font-size:12px; font-weight:600;
+                cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px;
+                transition:all 0.2s; font-family:inherit;
+              ">
+                <span class="material-symbols-rounded" style="font-size:15px;">public</span>
+                Real Chrome ✨
+              </button>
+            </div>
+
+            <!-- Instructions panel (shown only in real_chrome mode) -->
+            <div id="captchaChromeInstructions" style="
+              display:none; margin-top:8px;
+              background:rgba(99,102,241,0.07); border:1px solid rgba(99,102,241,0.25);
+              border-radius:10px; padding:12px 14px; font-size:11px; line-height:1.7;
+              color:rgba(255,255,255,0.65);
+            ">
+              <div style="font-weight:700;color:#818cf8;margin-bottom:6px;display:flex;align-items:center;gap:5px;">
+                <span class="material-symbols-rounded" style="font-size:14px;">info</span>
+                Cách bật Real Chrome Mode:
+              </div>
+              <ol style="margin:0;padding-left:18px;color:rgba(255,255,255,0.6);">
+                <li>Mở Chrome → <code
+                    style="background:rgba(0,0,0,0.3);padding:1px 5px;border-radius:4px;">chrome://extensions</code>
+                </li>
+                <li>Bật <strong style="color:#c4b5fd;">Developer mode</strong> (góc trên phải)</li>
+                <li>Click <strong>Load unpacked</strong> → chọn thư mục:<br>
+                  <code
+                    style="background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px;font-size:10px;word-break:break-all;">captcha_extension/</code>
+                </li>
+                <li>Mở <a href="https://labs.google/fx/vi/tools/flow/" target="_blank"
+                    style="color:#818cf8;">labs.google/fx/vi/tools/flow/</a> trong Chrome</li>
+                <li>Đợi badge bên trên chuyển sang <strong style="color:#34d399;">Chrome Connected ●</strong></li>
+              </ol>
+            </div>
+
+            <div style="font-size:10px;color:var(--text-muted);margin-top:5px;line-height:1.5;">
+              <strong>Auto:</strong> Brave xử lý captcha (mặc định) &nbsp;·&nbsp;
+              <strong>Real Chrome:</strong> Giảm 403 từ ~9% → ~0.01%
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-body" id="bodySettingsExt" style="display:none; padding-top:10px;">
+          <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:12px; padding:15px; margin-bottom:15px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div id="ext-server-dot" style="width:10px; height:10px; border-radius:50%; background:#fbbf24; box-shadow:0 0 8px rgba(251,191,36,0.4);"></div>
+                <span style="font-weight:600; font-size:14px; color:rgba(255,255,255,0.85);">Captcha Server</span>
+              </div>
+              <div id="ext-server-status" style="font-size:12px; color:var(--text-muted); font-weight:600; background:rgba(0,0,0,0.3); padding:4px 10px; border-radius:12px;">Đang tải...</div>
+            </div>
+            
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div id="ext-page-dot" style="width:10px; height:10px; border-radius:50%; background:#10b981; box-shadow:0 0 8px rgba(16,185,129,0.4);"></div>
+                <span style="font-weight:600; font-size:14px; color:rgba(255,255,255,0.85);">Trang liên kết</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:600; background:rgba(16,185,129,0.1); color:#10b981; padding:4px 10px; border-radius:12px; border:1px solid rgba(16,185,129,0.2);">
+                <span class="material-symbols-rounded" style="font-size:14px;">check_circle</span> labs.google
+              </div>
+            </div>
+          </div>
+
+          <button onclick="testCaptchaExt()" style="width:100%; padding:14px; border-radius:12px; border:none; background:#4f46e5; color:white; font-weight:600; font-size:13px; cursor:pointer; margin-bottom:10px; display:flex; justify-content:center; align-items:center; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='#4338ca'" onmouseout="this.style.background='#4f46e5'">
+            <span class="material-symbols-rounded" style="font-size:18px;">science</span> Test Captcha
+          </button>
+          
+          <button onclick="forceRefreshExt()" style="width:100%; padding:14px; border-radius:12px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.8); font-weight:600; font-size:13px; cursor:pointer; display:flex; justify-content:center; align-items:center; gap:8px; transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+            <span class="material-symbols-rounded" style="font-size:18px;">refresh</span> Force Refresh Page
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Logout Modal (Popup) ═══ -->
+    <div id="logoutModal" class="modal-overlay" style="display:none;"
+      onclick="if(event.target===this) closeLogoutModal()">
+      <div class="modal-panel" style="max-width: 320px; text-align: center; padding: 20px;">
+        <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+          <span class="material-symbols-rounded"
+            style="font-size: 48px; color: #ef4444; margin-bottom: 10px;">logout</span>
+        </div>
+        <div class="modal-body" style="padding-top: 0;">
+          <h3 style="margin: 0 0 8px 0; font-size: 18px;">Bạn muốn đăng xuất?</h3>
+          <p style="color: var(--text-muted); font-size: 13px; margin-bottom: 24px;">Phiên làm việc hiện tại sẽ bị đóng.
+          </p>
+          <div style="display: flex; gap: 10px; justify-content: center;">
+            <button class="btn" onclick="closeLogoutModal()" style="flex: 1; justify-content: center;">Hủy</button>
+            <button class="btn" onclick="confirmLogout()"
+              style="flex: 1; justify-content: center; background: #ef4444; color: white; border-color: #ef4444;">Đăng
+              xuất</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ═══ Account Modal ═══ -->
+    <div id="accountModal" class="modal-overlay" style="display:none;"
+      onclick="if(event.target===this) closeAccountModal()">
+      <div class="modal-panel" style="max-width:560px; padding:0; overflow:hidden;">
+
+        <!-- Header -->
+        <div class="modal-header"
+          style="padding:18px 22px 14px; background:rgba(255,255,255,0.03); border-bottom:1px solid rgba(255,255,255,0.08);">
+          <h3 style="display:flex;align-items:center;gap:8px;font-size:16px;margin:0;">
+            <span class="material-symbols-rounded" style="font-size:18px;color:#a78bfa;">manage_accounts</span>
+            Tài khoản & Nâng cấp
+          </h3>
+          <button class="overlay-close" onclick="closeAccountModal()">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <!-- User Info Card -->
+        <div style="padding:18px 22px 14px; border-bottom:1px solid rgba(255,255,255,0.06);">
+          <div style="display:flex;align-items:center;gap:14px;">
+            <div
+              style="width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#4f46e5);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <span class="material-symbols-rounded" style="font-size:24px;color:#fff;">person</span>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:15px;font-weight:600;color:#e0e0f0;" id="acctName">—</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:2px;" id="acctEmail">—</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div id="acctPlanBadge"
+                style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:rgba(138,92,246,0.2);color:#a78bfa;display:inline-block;">
+                TRIAL</div>
+              <div style="font-size:11px;color:var(--text-muted);margin-top:4px;" id="acctExpiry"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing Section -->
+        <div id="pricingSection" style="padding:16px 22px 8px;">
+          <!-- Label thay đổi theo plan -->
+          <div id="pricingLabel"
+            style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:12px;">
+            Nâng cấp gói</div>
+
+          <!-- Banner: user đã là Lifetime (ẩn tất cả cards) -->
+          <div id="lifetimeBanner"
+            style="display:none;background:linear-gradient(135deg,rgba(52,211,153,0.12),rgba(16,185,129,0.08));border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:20px;text-align:center;">
+            <div style="font-size:30px;margin-bottom:8px;">♾</div>
+            <div style="font-size:15px;font-weight:700;color:#34d399;margin-bottom:4px;">Bạn đang dùng gói Lifetime!
+            </div>
+            <div style="font-size:12px;color:var(--text-muted);line-height:1.6;">Tận hưởng toàn bộ tính năng vĩnh
+              viễn.<br>Cảm ơn bạn đã tin tưởng VEO3 Tool ❤️</div>
+          </div>
+
+          <!-- Cards grid — 3 cards -->
+          <div id="planCardsGrid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;">
+
+            <!-- Pro Card -->
+            <div id="cardPro"
+              style="background:rgba(138,92,246,0.08);border:1px solid rgba(138,92,246,0.3);border-radius:14px;padding:14px;position:relative;overflow:hidden;">
+              <div
+                style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-size:8px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:1px;white-space:nowrap;">
+                PHỔ BIẾN</div>
+              <div style="text-align:center;margin-top:16px;">
+                <div style="font-size:17px;font-weight:700;color:#a78bfa;">Pro</div>
+                <div style="font-size:20px;font-weight:800;color:#e0e0f0;margin:4px 0 2px;" id="pricePro">399.000đ</div>
+                <div style="font-size:10px;color:var(--text-muted);" id="durationPro">/30 ngày</div>
+              </div>
+              <ul style="list-style:none;padding:0;margin:10px 0;font-size:11px;color:#c4b5fd;line-height:1.8;">
+                <li>✓ Tất cả tính năng</li>
+                <li>✓ Không giới hạn</li>
+                <li>✓ Hỗ trợ ưu tiên</li>
+              </ul>
+              <button onclick="openPaymentModal('pro')"
+                style="width:100%;padding:8px;border-radius:10px;border:none;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;font-weight:700;font-size:11px;cursor:pointer;transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" id="btnBuyPro">
+                Mua Pro
+              </button>
+            </div>
+
+            <!-- VIP Card (Năm) -->
+            <div id="cardVip"
+              style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.4);border-radius:14px;padding:14px;position:relative;overflow:hidden;box-shadow:0 0 20px rgba(6,182,212,0.1);">
+              <div
+                style="position:absolute;top:8px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;font-size:8px;font-weight:800;padding:2px 8px;border-radius:20px;letter-spacing:1px;white-space:nowrap;">
+                ⭐ VIP</div>
+              <div style="text-align:center;margin-top:16px;">
+                <div style="font-size:17px;font-weight:700;color:#22d3ee;">VIP</div>
+                <div style="font-size:20px;font-weight:800;color:#e0e0f0;margin:4px 0 2px;" id="priceVip">1.200.000đ
+                </div>
+                <div style="font-size:10px;color:var(--text-muted);">/365 ngày</div>
+              </div>
+              <ul style="list-style:none;padding:0;margin:10px 0;font-size:11px;color:#67e8f9;line-height:1.8;">
+                <li>✓ Tất cả Pro</li>
+                <li>✓ Dùng cả năm</li>
+                <li>✓ Tiết kiệm 40%</li>
+              </ul>
+              <button onclick="openPaymentModal('vip')"
+                style="width:100%;padding:8px;border-radius:10px;border:none;background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;font-weight:700;font-size:11px;cursor:pointer;transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" id="btnBuyVip">
+                Mua VIP
+              </button>
+            </div>
+
+            <!-- Lifetime Card -->
+            <div id="cardLifetime"
+              style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:14px;">
+              <div style="text-align:center;margin-top:16px;">
+                <div style="font-size:17px;font-weight:700;color:#34d399;">Lifetime</div>
+                <div style="font-size:20px;font-weight:800;color:#e0e0f0;margin:4px 0 2px;" id="priceLifetime">
+                  1.900.000đ</div>
+                <div style="font-size:10px;color:var(--text-muted);">Trả 1 lần, dùng mãi</div>
+              </div>
+              <ul style="list-style:none;padding:0;margin:10px 0;font-size:11px;color:#6ee7b7;line-height:1.8;">
+                <li>✓ Không hết hạn</li>
+                <li>✓ Updates miễn phí</li>
+                <li>✓ Hỗ trợ VIP</li>
+              </ul>
+              <button onclick="openPaymentModal('lifetime')"
+                style="width:100%;padding:8px;border-radius:10px;border:none;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-weight:700;font-size:11px;cursor:pointer;transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'" id="btnBuyLifetime">
+                Mua Lifetime
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer note (chỉ hiện khi có cards) -->
+        <div id="pricingFooter"
+          style="padding:10px 22px 18px;text-align:center;font-size:11px;color:var(--text-muted);">
+          Sau khi chuyển khoản, tài khoản sẽ được nâng cấp tự động trong vài phút.
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Payment QR Modal ═══ -->
+    <div id="paymentModal" class="modal-overlay" style="display:none;"
+      onclick="if(event.target===this) closePaymentModal()">
+      <div class="modal-panel" style="max-width:380px;padding:0;overflow:hidden;">
+
+        <!-- Header -->
+        <div class="modal-header"
+          style="padding:16px 20px 14px;background:rgba(255,255,255,0.03);border-bottom:1px solid rgba(255,255,255,0.08);">
+          <h3 style="display:flex;align-items:center;gap:8px;font-size:15px;margin:0;">
+            <span class="material-symbols-rounded" style="font-size:18px;color:#60a5fa;">credit_card</span>
+            Thanh toán
+          </h3>
+          <button class="overlay-close" onclick="closePaymentModal()">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+
+        <div style="padding:20px;text-align:center;">
+          <!-- Loading state -->
+          <div id="paymentLoading" style="padding:30px 0;color:var(--text-muted);font-size:13px;">
+            <span class="material-symbols-rounded"
+              style="font-size:32px;display:block;margin-bottom:8px;opacity:0.5;">hourglass_empty</span>
+            Đang tải thông tin thanh toán...
+          </div>
+
+          <!-- QR Content -->
+          <div id="paymentContent" style="display:none;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
+              Quét mã QR hoặc chuyển khoản thủ công
+            </div>
+
+            <!-- QR Image -->
+            <div
+              style="background:#fff;border-radius:14px;padding:14px;display:inline-block;margin-bottom:16px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+              <img id="qrImage" src="" alt="QR Thanh toán" style="width:180px;height:180px;display:block;">
+            </div>
+
+            <!-- Bank Info -->
+            <div
+              style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;text-align:left;font-size:13px;margin-bottom:14px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="color:var(--text-muted);font-size:11px;">Ngân hàng</span>
+                <span style="font-weight:700;color:#e0e0f0;" id="pmBankName">BIDV</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="color:var(--text-muted);font-size:11px;">Số tài khoản</span>
+                <span style="font-weight:700;color:#e0e0f0;font-family:monospace;" id="pmAccountNumber">—</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                <span style="color:var(--text-muted);font-size:11px;">Chủ tài khoản</span>
+                <span style="font-weight:600;color:#e0e0f0;" id="pmAccountName">—</span>
+              </div>
+              <div style="height:1px;background:rgba(255,255,255,0.07);margin:10px 0;"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="color:var(--text-muted);font-size:11px;">Số tiền</span>
+                <span style="font-weight:800;font-size:16px;color:#a78bfa;" id="pmAmount">—</span>
+              </div>
+            </div>
+
+            <!-- Payment Code -->
+            <div style="text-align:left;margin-bottom:6px;font-size:11px;color:var(--text-muted);">Nội dung chuyển khoản
+              <span style="color:#ef4444;font-weight:700;">[BẮT BUỘC]</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div id="pmPaymentCode"
+                style="flex:1;background:rgba(99,102,241,0.15);border:1.5px dashed rgba(99,102,241,0.5);border-radius:10px;padding:10px 14px;font-size:16px;font-weight:800;font-family:monospace;color:#818cf8;letter-spacing:1px;">
+                wfbm00000</div>
+              <button onclick="copyPaymentCode()"
+                style="padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.06);color:#e0e0f0;cursor:pointer;font-size:12px;white-space:nowrap;display:flex;align-items:center;gap:4px;"
+                onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                onmouseout="this.style.background='rgba(255,255,255,0.06)'" id="btnCopyCode">
+                <span class="material-symbols-rounded" style="font-size:15px;">content_copy</span>
+                Copy mã
+              </button>
+            </div>
+
+            <!-- Note -->
+            <div
+              style="margin-top:14px;padding:10px 14px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.2);border-radius:10px;font-size:11px;color:#fbbf24;text-align:left;line-height:1.6;">
+              ⚠️ Nhập đúng nội dung chuyển khoản để hệ thống tự động xác nhận. Nếu sau 5 phút chưa được nâng cấp, hãy
+              liên hệ hỗ trợ.
+            </div>
+
+            <!-- Check Payment Button -->
+            <button id="btnCheckPayment" onclick="checkPaymentStatus()"
+              style="margin-top:12px;width:100%;padding:10px;border-radius:10px;border:1px solid rgba(99,102,241,0.4);background:rgba(99,102,241,0.1);color:#818cf8;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(99,102,241,0.2)'"
+              onmouseout="this.style.background='rgba(99,102,241,0.1)'">
+              <span class="material-symbols-rounded" style="font-size:16px;">refresh</span>
+              Kiểm tra thanh toán
+            </button>
+            <div style="font-size:10px;color:var(--text-muted);margin-top:6px;text-align:center;" id="paymentCheckNote">
+              Tự động kiểm tra mỗi 15 giây
+            </div>
+          </div>
+
+          <!-- Error state -->
+          <div id="paymentError" style="display:none;padding:20px 0;color:#ef4444;font-size:13px;">
+            <span class="material-symbols-rounded" style="font-size:32px;display:block;margin-bottom:8px;">error</span>
+            <span id="paymentErrorMsg">Không thể tải thông tin thanh toán</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div class="three-col-layout" id="promptLayoutWrapper">
+
+      <!-- SIDE DOCK LEFT -->
+      <div class="side-dock left-dock" id="leftDock" style="display: none;">
+        <button class="dock-btn" onclick="toggleSidebar('left')" title="Mở Chế độ tạo">
+          <span class="material-symbols-rounded">tune</span>
+        </button>
+      </div>
+
+      <!-- ═══ LEFT PANEL: Mode Selector (luôn hiển thị khi tab Prompt) ═══ -->
+      <aside class="left-panel" id="leftPanel">
+        <div class="panel-header">
+          <span class="material-symbols-rounded">tune</span>
+          <span>Chế độ tạo</span>
+          <button class="panel-clear-btn" onclick="toggleSidebar('left')" title="Thu gọn" style="margin-left: auto;">
+            <span class="material-symbols-rounded" style="font-size: 16px;">keyboard_double_arrow_left</span>
+          </button>
+        </div>
+        <div class="left-panel-body">
+
+          <!-- Mode Selector — Level 1: Ảnh | Video -->
+          <div class="setting-group">
+            <label class="setting-label">Loại</label>
+            <div class="mode-type-row">
+              <button class="mode-type-btn active" id="modeTypeImg" onclick="selectModeType('image')">
+                <span class="material-symbols-rounded">image</span>
+                Ảnh
+              </button>
+              <button class="mode-type-btn" id="modeTypeVid" onclick="selectModeType('video')">
+                <span class="material-symbols-rounded">videocam</span>
+                Video
+              </button>
+            </div>
+
+            <!-- Level 2: Sub-modes (Image) -->
+            <div id="imageSubModes" class="mode-sub-row">
+              <button class="mode-sub-btn active" data-mode="image" onclick="selectMode('image')"
+                title="Tạo ảnh từ text prompt">
+                <span class="material-symbols-rounded">auto_awesome</span>
+                Hình ảnh
+              </button>
+              <button class="mode-sub-btn" data-mode="image_from_image" onclick="selectMode('image_from_image')"
+                title="Tạo ảnh từ ảnh tham chiếu + prompt">
+                <span class="material-symbols-rounded">photo_auto_merge</span>
+                Ảnh+Ảnh
+              </button>
+            </div>
+
+            <!-- Level 2: Sub-modes (Video) -->
+            <div id="videoSubModes" class="mode-sub-row" style="display:none;">
+              <button class="mode-sub-btn active" data-mode="video" onclick="selectMode('video')"
+                title="Tạo video từ text prompt">
+                <span class="material-symbols-rounded">movie</span>
+                Video
+              </button>
+              <button class="mode-sub-btn" data-mode="video_from_image" onclick="selectMode('video_from_image')"
+                title="Tạo video từ ảnh tham chiếu + prompt">
+                <span class="material-symbols-rounded">smart_display</span>
+                Video+Ảnh
+              </button>
+              <button class="mode-sub-btn" data-mode="video_from_frames" onclick="selectMode('video_from_frames')"
+                title="Tạo video từ ảnh đầu + ảnh cuối">
+                <span class="material-symbols-rounded">video_library</span>
+                2 Khung
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Model Selector (chỉ hiện khi chọn Video) -->
+          <div id="videoModelGroup" class="setting-group" style="display:none;">
+            <label class="setting-label">
+              <span class="material-symbols-rounded" style="font-size:13px;vertical-align:middle;">smart_toy</span>
+              AI Model tạo video
+            </label>
+            <div class="video-model-list" id="videoModelList">
+              <button class="video-model-btn" data-model="veo31_lite" onclick="selectVideoModelUI(this)"
+                title="Veo 3.1 - Lite — Nhẹ, nhanh nhất">
+                <span class="vmb-name">Veo 3.1 - Lite</span>
+                <span class="vmb-tag">Lite</span>
+              </button>
+              <button class="video-model-btn" data-model="veo31_lite_lower" onclick="selectVideoModelUI(this)"
+                title="Veo 3.1 - Lite [Lower Priority] — Nhẹ, ưu tiên thấp">
+                <span class="vmb-name">Veo 3.1 - Lite</span>
+                <span class="vmb-tag">Lower Priority</span>
+              </button>
+              <button class="video-model-btn" data-model="veo31_fast" onclick="selectVideoModelUI(this)"
+                title="Veo 3.1 - Fast — Nhanh, ưu tiên thường">
+                <span class="vmb-name">Veo 3.1 - Fast</span>
+                <span class="vmb-tag">Fast</span>
+              </button>
+              <button class="video-model-btn active" data-model="veo31_fast_lower" onclick="selectVideoModelUI(this)"
+                title="Veo 3.1 - Fast [Lower Priority] (leaving 5/10) — Nhanh, ưu tiên thấp">
+                <span class="vmb-name">Veo 3.1 - Fast</span>
+                <span class="vmb-tag">Lower Pri (5/10)</span>
+              </button>
+              <button class="video-model-btn" data-model="veo31_quality" onclick="selectVideoModelUI(this)"
+                title="Veo 3.1 - Quality — Chất lượng cao nhất">
+                <span class="vmb-name">Veo 3.1 - Quality</span>
+                <span class="vmb-tag">Quality</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- AI Model Selector (chỉ hiện khi chọn Hình ảnh) -->
+          <div id="imageModelGroup" class="setting-group">
+            <label class="setting-label">
+              <span class="material-symbols-rounded" style="font-size:13px;vertical-align:middle;">image</span>
+              AI Model tạo ảnh
+            </label>
+            <div class="video-model-list" id="imageModelList">
+              <button class="video-model-btn" data-model="nanobanana_2" onclick="selectImageModelUI(this)"
+                title="Nano Banana 2">
+                <span class="vmb-name">🍌 Nano Banana 2</span>
+              </button>
+              <button class="video-model-btn" data-model="nanobanana_pro" onclick="selectImageModelUI(this)"
+                title="Nano Banana Pro">
+                <span class="vmb-name">🍌 Nano Banana Pro</span>
+              </button>
+              <button class="video-model-btn active" data-model="imagen_4" onclick="selectImageModelUI(this)"
+                title="Imagen 3 / 4">
+                <span class="vmb-name">Imagen 4</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Upload Zone: Reference Images (image_from_image, video_from_image) — Nhiều ảnh -->
+          <div id="uploadRefGroup" class="setting-group" style="display:none;">
+            <label class="setting-label">Ảnh tham chiếu <span id="refImageCount"
+                style="font-size:10px;color:var(--text-muted);font-weight:400;">(0/3)</span></label>
+            <!-- Thumbnails của ảnh đã chọn -->
+            <div id="refImageThumbs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
+            <!-- Drop zone: chỉ hiện khi < 3 ảnh -->
+            <div class="upload-zone" id="uploadRefZone" onclick="document.getElementById('refImageInput').click()"
+              style="min-height:60px;padding:10px;">
+              <span class="material-symbols-rounded" style="font-size:22px;opacity:0.4;">add_photo_alternate</span>
+              <span style="font-size:11px;color:var(--text-muted);">Click để thêm ảnh tham chiếu (tối đa 3)</span>
+            </div>
+            <input type="file" id="refImageInput" class="file-input-hidden" accept="image/*" multiple
+              onchange="handleMultiRefImageUpload(event)">
+          </div>
+
+          <!-- Upload Zones: Start + End Frame (video_from_frames) -->
+          <div id="uploadFramesGroup" class="setting-group" style="display:none;">
+            <label class="setting-label">Ảnh đầu (Bắt đầu)</label>
+            <div class="upload-zone" id="uploadStartZone" onclick="document.getElementById('startImageInput').click()">
+              <img id="startImagePreview" class="upload-preview" style="display:none;">
+              <div id="uploadStartPlaceholder">
+                <span class="material-symbols-rounded" style="font-size:28px;opacity:0.4;">first_page</span>
+                <span style="font-size:11px;color:var(--text-muted);">Khung đầu tiên</span>
+              </div>
+            </div>
+            <input type="file" id="startImageInput" class="file-input-hidden" accept="image/*"
+              onchange="handleImageUpload('start', event)">
+
+            <label class="setting-label" style="margin-top:8px;">Ảnh cuối (Kết thúc)</label>
+            <div class="upload-zone" id="uploadEndZone" onclick="document.getElementById('endImageInput').click()">
+              <img id="endImagePreview" class="upload-preview" style="display:none;">
+              <div id="uploadEndPlaceholder">
+                <span class="material-symbols-rounded" style="font-size:28px;opacity:0.4;">last_page</span>
+                <span style="font-size:11px;color:var(--text-muted);">Khung cuối cùng</span>
+              </div>
+            </div>
+            <input type="file" id="endImageInput" class="file-input-hidden" accept="image/*"
+              onchange="handleImageUpload('end', event)">
+          </div>
+
+          <div class="panel-divider"></div>
+
+          <!-- Ratio -->
+          <div class="setting-group">
+            <label class="setting-label">Tỷ lệ kích thước</label>
+            <div class="setting-options" style="flex-wrap:wrap;">
+              <button class="setting-option active" data-setting="ratio" data-value="landscape"
+                onclick="setSetting(this)">16:9</button>
+              <button class="setting-option" data-setting="ratio" data-value="4_3"
+                onclick="setSetting(this)">4:3</button>
+              <button class="setting-option" data-setting="ratio" data-value="square"
+                onclick="setSetting(this)">1:1</button>
+              <button class="setting-option" data-setting="ratio" data-value="3_4"
+                onclick="setSetting(this)">3:4</button>
+              <button class="setting-option" data-setting="ratio" data-value="portrait"
+                onclick="setSetting(this)">9:16</button>
+            </div>
+          </div>
+
+          <!-- Quantity -->
+          <div class="setting-group">
+            <label class="setting-label">Số lượng / prompt</label>
+            <div class="setting-options">
+              <button class="setting-option" data-setting="quantity" data-value="1"
+                onclick="setSetting(this)">x1</button>
+              <button class="setting-option active" data-setting="quantity" data-value="2"
+                onclick="setSetting(this)">x2</button>
+              <button class="setting-option" data-setting="quantity" data-value="3"
+                onclick="setSetting(this)">x3</button>
+              <button class="setting-option" data-setting="quantity" data-value="4"
+                onclick="setSetting(this)">x4</button>
+            </div>
+          </div>
+
+          <div class="panel-divider"></div>
+
+          <!-- Chất lượng tải về -->
+          <div class="setting-group">
+            <label class="setting-label">Chất lượng tải về ✨</label>
+            <div class="setting-options" style="flex-wrap:wrap;">
+              <button class="setting-option" data-setting="downloadQuality" data-value="native"
+                onclick="setSetting(this)" title="Tải về ảnh/video ở kích thước phân giải gốc">Gốc</button>
+              <button class="setting-option" data-setting="downloadQuality" data-value="1080p"
+                onclick="setSetting(this)" title="Full HD 1920×1080">1080p</button>
+              <button class="setting-option active" data-setting="downloadQuality" data-value="2K"
+                onclick="setSetting(this)" title="2K 2560×1440">2K</button>
+              <button class="setting-option" data-setting="downloadQuality" data-value="4K" onclick="setSetting(this)"
+                title="4K 3840×2160 — Lưu ý: mất nhiều thời gian hơn">4K</button>
+            </div>
+            <!-- <div style="font-size:9.5px;color:#666;margin-top:4px;line-height:1.4;">
+              ⚡ Dùng FFmpeg upscale (Lanczos). Không ảnh hưởng đến thời gian tạo.
+            </div> -->
+          </div>
+
+          <div class="panel-divider"></div>
+
+          <!-- URL Project Flow -->
+
+
+        </div>
+      </aside>
+
+      <!-- ═══ CENTER: Main Content ═══ -->
+      <main class="main-v2">
+        <!-- ===== TAB: PROMPT ===== -->
+        <div id="promptTab" class="tab-page active">
+          <div class="prompt-page">
+            <div class="prompt-editor">
+              <div class="prompt-editor-top"
+                style="display: flex; gap: 10px; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <h2><span class="material-symbols-rounded">edit_note</span> Danh sách Prompt</h2>
+                  <span id="promptCount" class="prompt-count">0 prompt</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <label style="font-size: 13px; font-weight: 500;">📁 Thư mục con:</label>
+                  <input type="text" id="subfolderName" placeholder="Tên thư mục..."
+                    style="padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border-color); background: rgba(0,0,0,0.1); color: inherit; width: 150px;">
+                </div>
+              </div>
+              <textarea id="promptTextarea" class="prompt-textarea"
+                placeholder="Nhập prompt ở đây, mỗi dòng là một prompt riêng biệt...&#10;&#10;Ví dụ:&#10;A cinematic shot of a dragon flying over a medieval castle at sunset&#10;A slow-motion close-up of rain drops hitting a window&#10;An aerial view of Tokyo city at night with neon lights"></textarea>
+
+              <div class="prompt-editor-bottom">
+                <div class="prompt-actions">
+                  <button class="btn btn-primary" onclick="addPrompts()">
+                    <span class="material-symbols-rounded">add</span>
+                    Thêm
+                  </button>
+                  <button class="btn" onclick="document.getElementById('fileInput').click()">
+                    <span class="material-symbols-rounded">upload_file</span>
+                    Import .txt
+                  </button>
+                  <button class="btn btn-ghost" onclick="clearAllPrompts()">
+                    <span class="material-symbols-rounded">delete_sweep</span>
+                    Xóa tất cả
+                  </button>
+                  <input type="file" id="fileInput" class="file-input-hidden" accept=".txt"
+                    onchange="importFile(event)">
+                </div>
+                <div class="prompt-hint">
+                  <span class="material-symbols-rounded" style="font-size: 13px;">info</span>
+                  Mỗi dòng = 1 prompt
+                </div>
+              </div>
+            </div>
+
+            <!-- Prompt List -->
+            <div id="promptList" class="prompt-list">
+              <div class="empty-state">
+                <span class="material-symbols-rounded icon">movie_creation</span>
+                <h3>Chưa có prompt nào</h3>
+                <p>Nhập prompt ở trên hoặc import từ file .txt</p>
+              </div>
+            </div>
+
+            <!-- Media Gallery -->
+            <div id="gallerySection" style="display: none;">
+              <div class="gallery-header">
+                <div class="gallery-title-row">
+                  <h2>
+                    <span class="material-symbols-rounded">photo_library</span>
+                    Kết quả (<span id="mediaCount">0</span>)
+                  </h2>
+                  <div class="gallery-header-actions">
+                    <button class="btn btn-ghost" onclick="clearGallery()" title="Xóa tất cả lịch sử">
+                      <span class="material-symbols-rounded" style="font-size:16px">delete_sweep</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Toolbar: Search + Sort + Filter -->
+                <div class="gallery-toolbar">
+                  <!-- Search -->
+                  <div class="gallery-search-wrap">
+                    <span class="material-symbols-rounded gallery-search-icon">search</span>
+                    <input type="text" id="gallerySearch" class="gallery-search-input" placeholder="Tìm theo prompt..."
+                      oninput="onGalleryFilterChange()">
+                    <button class="gallery-search-clear" id="galleryClearSearch" onclick="clearGallerySearch()"
+                      style="display:none">
+                      <span class="material-symbols-rounded">close</span>
+                    </button>
+                  </div>
+
+                  <!-- Filter by type -->
+                  <div class="gallery-filter-group">
+                    <button class="gallery-filter-btn active" data-filter="all"
+                      onclick="setGalleryFilter(this, 'type', 'all')">
+                      <span class="material-symbols-rounded" style="font-size:15px">apps</span> Tất cả
+                    </button>
+                    <button class="gallery-filter-btn" data-filter="image"
+                      onclick="setGalleryFilter(this, 'type', 'image')">
+                      <span class="material-symbols-rounded" style="font-size:15px">image</span> Ảnh
+                    </button>
+                    <button class="gallery-filter-btn" data-filter="video"
+                      onclick="setGalleryFilter(this, 'type', 'video')">
+                      <span class="material-symbols-rounded" style="font-size:15px">videocam</span> Video
+                    </button>
+                  </div>
+
+                  <!-- Sort -->
+                  <div class="gallery-sort-group">
+                    <span class="material-symbols-rounded" style="font-size:16px;color:var(--text-muted)">sort</span>
+                    <select id="gallerySortSelect" class="gallery-sort-select" onchange="onGalleryFilterChange()">
+                      <option value="date-desc">Mới nhất trước</option>
+                      <option value="date-asc">Cũ nhất trước</option>
+                      <option value="type-image">Ảnh trước</option>
+                      <option value="type-video">Video trước</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Date filter row -->
+                <div class="gallery-date-filter">
+                  <span class="material-symbols-rounded"
+                    style="font-size:15px;color:var(--text-muted)">calendar_today</span>
+                  <label style="font-size:12px;color:var(--text-muted)">Từ:</label>
+                  <input type="date" id="galleryDateFrom" class="gallery-date-input" onchange="onGalleryFilterChange()">
+                  <label style="font-size:12px;color:var(--text-muted)">Đến:</label>
+                  <input type="date" id="galleryDateTo" class="gallery-date-input" onchange="onGalleryFilterChange()">
+                  <button class="gallery-filter-btn" onclick="clearDateFilter()" title="Xóa lọc ngày"
+                    style="padding:3px 8px;">
+                    <span class="material-symbols-rounded" style="font-size:14px">filter_alt_off</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Groups container -->
+              <div id="mediaGallery" class="media-gallery"></div>
+
+              <!-- Pagination -->
+              <div id="galleryPagination" class="gallery-pagination" style="display:none">
+                <button class="page-btn" id="pagePrev" onclick="changePage(-1)">
+                  <span class="material-symbols-rounded">chevron_left</span>
+                </button>
+                <div id="pageNumbers" class="page-numbers"></div>
+                <button class="page-btn" id="pageNext" onclick="changePage(1)">
+                  <span class="material-symbols-rounded">chevron_right</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== TAB: BUILDER ===== -->
+        <div id="builderTab" class="tab-page" style="display: none;">
+          <div class="wfb-layout">
+            <!-- Left: Node Palette -->
+            <div class="wfb-sidebar">
+              <div class="wfb-sidebar-section">
+                <div class="wfb-sidebar-label">Nodes</div>
+                <div id="wfbNodePalette"></div>
+              </div>
+              <div class="wfb-sidebar-section">
+                <div class="wfb-sidebar-label">Workflows</div>
+                <div class="wfb-wf-controls">
+                  <input type="text" id="wfbWorkflowName" class="wfb-wf-name-input" placeholder="Tên workflow..."
+                    value="Untitled Workflow">
+                  <div class="wfb-wf-btn-row">
+                    <button class="btn btn-primary" onclick="WFB.saveWorkflow()"
+                      style="flex:1;justify-content:center;padding:7px 10px;font-size:11px">
+                      <span class="material-symbols-rounded" style="font-size:14px">save</span> Lưu
+                    </button>
+                    <button class="btn" onclick="WFB.newWorkflow()" style="padding:7px 10px;font-size:11px"><span
+                        class="material-symbols-rounded" style="font-size:14px">add</span></button>
+                    <button class="btn" onclick="WFB.exportWorkflow()" style="padding:7px 10px;font-size:11px"
+                      title="Export"><span class="material-symbols-rounded"
+                        style="font-size:14px">download</span></button>
+                    <button class="btn" onclick="WFB.importWorkflow()" style="padding:7px 10px;font-size:11px"
+                      title="Import"><span class="material-symbols-rounded"
+                        style="font-size:14px">upload</span></button>
+                  </div>
+                </div>
+                <div id="wfbWorkflowList" class="wfb-wf-list"></div>
+              </div>
+            </div>
+            <!-- Center: Canvas -->
+            <div class="wfb-canvas-wrapper">
+              <div class="wfb-toolbar">
+                <button class="btn btn-primary" onclick="WFB.runWorkflow()" id="wfbBtnRun">
+                  <span class="material-symbols-rounded" style="font-size:16px">play_arrow</span>
+                  Chạy Workflow
+                </button>
+                <button class="btn" onclick="WFB.pauseWorkflow()" id="wfbBtnPause"
+                  style="display:none; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; border:none; border-radius:8px; padding:8px 14px; cursor:pointer; display:none; gap:6px; align-items:center;">
+                  <span class="material-symbols-rounded" style="font-size:16px">pause</span>
+                  <span id="wfbBtnPauseLabel">Tạm dừng</span>
+                </button>
+                <button class="btn" onclick="WFB.stopWorkflow()" id="wfbBtnStop"
+                  style="display:none; background:linear-gradient(135deg,#ef4444,#dc2626); color:#fff; border:none; border-radius:8px; padding:8px 14px; cursor:pointer; gap:6px; align-items:center;">
+                  <span class="material-symbols-rounded" style="font-size:16px">stop</span>
+                  Dừng
+                </button>
+                <!-- Stat badges: Xong / Chờ / Lỗi -->
+                <div class="wfb-stat-group" id="wfbStatGroup">
+                  <div class="wfb-stat-item done">
+                    <span class="wfb-stat-val" id="wfbStatDone">0</span>
+                    <span class="wfb-stat-lbl">Xong</span>
+                  </div>
+                  <div class="wfb-stat-item wait">
+                    <span class="wfb-stat-val" id="wfbStatWait">0</span>
+                    <span class="wfb-stat-lbl">Chờ</span>
+                  </div>
+                  <div class="wfb-stat-item err">
+                    <span class="wfb-stat-val" id="wfbStatErr">0</span>
+                    <span class="wfb-stat-lbl">Lỗi</span>
+                  </div>
+                </div>
+                <span class="wfb-toolbar-hint">Scroll: zoom | Alt+drag: pan </span>
+              </div>
+              <canvas id="wfbCanvas"></canvas>
+            </div>
+            <!-- Right: Node Editor -->
+            <div id="wfbNodeEditor" class="wfb-node-editor" style="display:none;"></div>
+          </div>
+        </div>
+
+
+        <div id="storeTab" class="tab-page" style="display: none;">
+          <div class="store-layout">
+
+            <aside class="store-sidebar">
+              <div class="wfb-sidebar-section">
+                <div class="wfb-sidebar-label">Danh mục</div>
+                <div class="store-filter-list">
+                  <button class="store-filter-btn active" onclick="switchStoreTab('all', this)">
+                    <span class="material-symbols-rounded">apps</span> Tất cả
+                  </button>
+                  <button class="store-filter-btn" onclick="switchStoreTab('workflow', this)">
+                    <span class="material-symbols-rounded">account_tree</span> Workflow
+                  </button>
+                  <button class="store-filter-btn" onclick="switchStoreTab('chatbot', this)">
+                    <span class="material-symbols-rounded">smart_toy</span> Chatbot Prompt
+                  </button>
+                  <button class="store-filter-btn" onclick="switchStoreTab('freeprompts', this)">
+                    <span class="material-symbols-rounded">notes</span> Free Prompts
+                  </button>
+                </div>
+              </div>
+
+              <!-- Lịch sử mua hàng -->
+              <div class="wfb-sidebar-section" style="margin-top: 20px;">
+                <div class="wfb-sidebar-label">Đơn hàng của tôi</div>
+                <div id="storeOrderList" style="font-size:12px; color:var(--text-muted); margin-top:6px;">
+                  <div style="text-align:center; padding:10px 0; opacity:0.5;">Đang tải...</div>
+                </div>
+              </div>
+            </aside>
+
+            <div class="store-main">
+              <!-- ── TẤT CẢ (ALL) VIEW ── -->
+              <div id="store-view-all" class="store-view-content" style="display:block;">
+                <!-- Thanh tìm kiếm -->
+                <div style="display:flex; gap:10px; margin-bottom:20px; align-items:center;">
+                  <div
+                    style="flex:1; display:flex; align-items:center; background:#0f172a; border:1px solid #1e293b; border-radius:8px; padding:0 12px;">
+                    <span class="material-symbols-rounded"
+                      style="color:#64748b; font-size:18px; margin-right:8px;">search</span>
+                    <input type="text" id="storeSearchAll" placeholder="Tìm kiếm sản phẩm..."
+                      style="flex:1; background:transparent; border:none; color:#f8fafc; padding:10px 0; outline:none; font-size:13px; font-family:inherit;"
+                      oninput="debounceStoreSearch()">
+                  </div>
+                  <button onclick="loadStoreProducts()" title="Tải lại"
+                    style="padding:8px 12px; border-radius:8px; border:1px solid #1e293b; background:#0f172a; color:#94a3b8; cursor:pointer;">
+                    <span class="material-symbols-rounded" style="font-size:18px;">refresh</span>
+                  </button>
+                </div>
+
+                <!-- Loading state -->
+                <div id="storeLoadingAll" style="padding:60px 0; text-align:center; color:var(--text-muted);">
+                  <div
+                    style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;">
+                  </div>
+                  <p style="font-size:13px;">Đang tải sản phẩm...</p>
+                </div>
+
+                <!-- Error state -->
+                <div id="storeErrorAll" style="display:none; padding:40px 20px; text-align:center; color:#ef4444;">
+                  <span class="material-symbols-rounded" style="font-size:48px; opacity:0.5;">error</span>
+                  <p style="margin-top:10px; font-size:13px;" id="storeErrorMsg">Không thể tải sản phẩm</p>
+                  <button onclick="loadStoreProducts()"
+                    style="margin-top:12px; padding:8px 18px; border-radius:8px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.1); color:#ef4444; cursor:pointer; font-size:13px;">
+                    Thử lại
+                  </button>
+                </div>
+
+                <!-- Sản phẩm FREE PROMPT -->
+                <div id="storeSectionFree" style="display:none; margin-bottom:30px;">
+                  <h2
+                    style="font-size:16px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; color:#34d399;">
+                    <span class="material-symbols-rounded" style="color:#34d399;">redeem</span> 🎁 Prompt Free
+                    <span id="storeSectionFree_count"
+                      style="font-size:12px; font-weight:400; color:#64748b; margin-left:4px;"></span>
+                  </h2>
+                  <div id="storeGridFree" class="store-grid"></div>
+                </div>
+
+                <!-- Sản phẩm CHATBOT -->
+                <div id="storeSectionChatbotAll" style="display:none; margin-bottom:30px;">
+                  <h2
+                    style="font-size:16px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; color:#60a5fa;">
+                    <span class="material-symbols-rounded" style="color:#60a5fa;">smart_toy</span> 🤖 Chatbot
+                    <span id="storeSectionChatbotAll_count"
+                      style="font-size:12px; font-weight:400; color:#64748b; margin-left:4px;"></span>
+                  </h2>
+                  <div id="storeGridChatbotAll" class="store-grid"></div>
+                </div>
+
+                <!-- Sản phẩm CÓ PHÍ -->
+                <div id="storeSectionPaid" style="display:none; margin-bottom:30px;">
+                  <h2
+                    style="font-size:16px; font-weight:600; margin-bottom:14px; display:flex; align-items:center; gap:8px; color:#fbbf24;">
+                    <span class="material-symbols-rounded" style="color:#fbbf24;">bolt</span> ⚡ Cao cấp
+                    <span id="storeSectionPaid_count"
+                      style="font-size:12px; font-weight:400; color:#64748b; margin-left:4px;"></span>
+                  </h2>
+                  <div id="storeGridPaid" class="store-grid"></div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="storeEmptyAll"
+                  style="display:none; padding:60px 20px; text-align:center; color:var(--text-muted);">
+                  <span class="material-symbols-rounded" style="font-size:48px; opacity:0.4;">storefront</span>
+                  <p style="margin-top:12px; font-size:14px;">Không có sản phẩm nào</p>
+                </div>
+              </div>
+
+              <!-- ── WORKFLOW VIEW ── -->
+              <div id="store-view-workflow" class="store-view-content" style="display:none;">
+                <div id="storeLoadingWorkflow" style="padding:60px 0; text-align:center; color:var(--text-muted);">
+                  <div
+                    style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;">
+                  </div>
+                </div>
+                <div id="storeGridWorkflow" class="store-grid" style="display:none;"></div>
+                <div id="storeEmptyWorkflow"
+                  style="display:none; padding:40px 20px; text-align:center; color:var(--text-muted);">
+                  <span class="material-symbols-rounded" style="font-size:48px; opacity:0.5;">account_tree</span>
+                  <p style="margin-top:10px; font-size:14px;">Danh sách Workflow đang trống</p>
+                </div>
+              </div>
+
+              <!-- ── CHATBOT PROMPT VIEW ── -->
+              <div id="store-view-chatbot" class="store-view-content" style="display:none;">
+                <div id="storeLoadingChatbot" style="padding:60px 0; text-align:center; color:var(--text-muted);">
+                  <div
+                    style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;">
+                  </div>
+                </div>
+                <div id="storeGridChatbot" class="store-grid" style="display:none;"></div>
+                <div id="storeEmptyChatbot"
+                  style="display:none; padding:40px 20px; text-align:center; color:var(--text-muted);">
+                  <span class="material-symbols-rounded" style="font-size:48px; opacity:0.5;">smart_toy</span>
+                  <p style="margin-top:10px; font-size:14px;">Danh sách Chatbot Prompt đang trống</p>
+                </div>
+              </div>
+
+              <!-- ── FREE PROMPTS VIEW ── -->
+              <div id="store-view-freeprompts" class="store-view-content" style="display:none;">
+                <div id="storeLoadingFreeprompts" style="padding:60px 0; text-align:center; color:var(--text-muted);">
+                  <div
+                    style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.1);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;">
+                  </div>
+                </div>
+                <div id="storeGridFreeprompts" class="store-grid" style="display:none;"></div>
+                <div id="storeEmptyFreeprompts"
+                  style="display:none; padding:40px 20px; text-align:center; color:var(--text-muted);">
+                  <span class="material-symbols-rounded" style="font-size:48px; opacity:0.5;">notes</span>
+                  <p style="margin-top:10px; font-size:14px;">Danh sách Free Prompts đang trống</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </main>
+
+
+      <!-- ═══ RIGHT PANEL: Logs (luôn hiển thị khi tab Prompt) ═══ -->
+      <aside class="right-panel" id="rightPanel">
+        <div class="panel-half queue-section">
+          <div class="panel-header">
+            <span class="material-symbols-rounded">List_alt</span>
+            <span>Hàng đợi</span>
+            <span id="queueCountBadge" class="queue-badge" style="display:none">0</span>
+            <button class="panel-clear-btn" onclick="clearQueue()" title="Xóa hàng đợi" style="margin-left: auto;">
+              <span class="material-symbols-rounded" style="font-size: 14px;">delete_sweep</span>
+            </button>
+            <button class="panel-clear-btn" onclick="toggleSidebar('queue')" title="Thu gọn Hàng đợi"
+              style="margin-left: 4px;">
+              <span class="material-symbols-rounded" style="font-size: 16px;">keyboard_double_arrow_right</span>
+            </button>
+          </div>
+          <div id="queueContainer" class="queue-container">
+            <div class="empty-queue-state">
+              <span class="material-symbols-rounded">check_circle</span>
+              <p>Không có tác vụ chờ</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-divider" style="margin:0; height:2px; background: rgba(255,255,255,0.02)"></div>
+
+        <div class="panel-half log-section">
+          <div class="panel-header">
+            <span class="material-symbols-rounded">terminal</span>
+            <span>Nhật Ký</span>
+            <button class="panel-clear-btn" onclick="document.getElementById('logContainer').innerHTML=''"
+              title="Xóa log" style="margin-left: auto;">
+              <span class="material-symbols-rounded" style="font-size: 14px;">delete_sweep</span>
+            </button>
+            <button class="panel-clear-btn" onclick="toggleSidebar('log')" title="Thu gọn Nhật Ký"
+              style="margin-left: 4px;">
+              <span class="material-symbols-rounded" style="font-size: 16px;">keyboard_double_arrow_right</span>
+            </button>
+          </div>
+          <div id="logContainer" class="log-container">
+            <span class="time">--:--:--</span>
+            <span>Sắn sàng. Hãy kết nối Chrome để bắt đầu.</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- SIDE DOCK RIGHT -->
+      <div class="side-dock right-dock" id="rightDock" style="display: none;">
+        <button class="dock-btn" id="dockBtnQueue" onclick="toggleSidebar('queue')" title="Mở Hàng đợi"
+          style="display: none;">
+          <span class="material-symbols-rounded">List_alt</span>
+        </button>
+        <button class="dock-btn" id="dockBtnLog" onclick="toggleSidebar('log')" title="Mở Nhật Ký"
+          style="display: none;">
+          <span class="material-symbols-rounded">terminal</span>
+        </button>
+      </div>
+
+    </div><!-- end three-col-layout -->
+
+    <!-- ═══ Bottom Control Bar ═══ -->
+    <div class="bottom-bar">
+      <div class="bottom-bar-left">
+        <!-- Mini Progress -->
+        <div class="mini-progress">
+          <div class="mini-stat">
+            <span id="statCompleted" class="mini-stat-val accent">0</span>
+            <span class="mini-stat-lbl">Xong</span>
+          </div>
+          <div class="mini-stat">
+            <span id="statPending" class="mini-stat-val warning">0</span>
+            <span class="mini-stat-lbl">Chờ</span>
+          </div>
+          <div class="mini-stat">
+            <span id="statErrors" class="mini-stat-val danger">0</span>
+            <span class="mini-stat-lbl">Lỗi</span>
+          </div>
+
+        </div>
+        <div class="bottom-progress-bar">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+      </div>
+      <div class="bottom-bar-right">
+        <button id="btnPause" class="bottom-btn warning" onclick="pauseAutomation()" disabled title="Tạm dừng">
+          <span class="material-symbols-rounded">pause</span>
+        </button>
+        <button id="btnStop" class="bottom-btn danger" onclick="stopAutomation()" disabled title="Dừng">
+          <span class="material-symbols-rounded">stop</span>
+        </button>
+        <button id="btnRestart" class="bottom-btn" onclick="restartAutomation()" disabled title="Dừng và làm lại từ đầu"
+          style="color: #60a5fa; border-color: rgba(96,165,250,0.3);">
+          <span class="material-symbols-rounded">restart_alt</span>
+        </button>
+        <button id="btnStart" class="bottom-btn-start" onclick="startAutomation()" disabled>
+          <span class="material-symbols-rounded">play_arrow</span>
+          Bắt đầu tạo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Check (chạy trước mọi thứ) -->
+  <script>
+    (async function authGate() {
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+        if (!data.loggedIn) {
+          window.location.href = '/login.html';
+          return;
+        }
+        const badge = document.getElementById('userBadge');
+        const nameEl = document.getElementById('userName');
+        const planEl = document.getElementById('userPlanBadge');
+        const logoutBtn = document.getElementById('btnLogout');
+        if (badge && data.user) {
+          nameEl.textContent = data.user.name || data.user.email || '—';
+          const plan = (data.user.plan || 'trial').toUpperCase();
+          planEl.textContent = plan;
+          const planColors = {
+            TRIAL: { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
+            BASIC: { bg: 'rgba(96,165,250,0.15)', color: '#60a5fa' },
+            PRO: { bg: 'rgba(138,92,246,0.2)', color: '#a78bfa' },
+            LIFETIME: { bg: 'rgba(52,211,153,0.15)', color: '#34d399' }
+          };
+          const c = planColors[plan] || planColors.TRIAL;
+          planEl.style.background = c.bg;
+          planEl.style.color = c.color;
+          badge.style.display = 'flex';
+          logoutBtn.style.display = '';
+        }
+      } catch (e) {
+        console.warn('Auth check failed:', e);
+      }
+    })();
+
+    function handleLogoutFromTool() {
+      document.getElementById('logoutModal').style.display = 'flex';
+    }
+    function closeLogoutModal() {
+      document.getElementById('logoutModal').style.display = 'none';
+    }
+    async function confirmLogout() {
+      closeLogoutModal();
+      try { await fetch('/api/auth/logout', { method: 'POST' }); } catch (e) { }
+      window.location.href = '/login.html';
+    }
+    function openSettingsModal() {
+      document.getElementById('settingsModal').style.display = 'flex';
+    }
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').style.display = 'none';
+    }
+
+    // ═══ Account Modal ═══
+    let _paymentInfo = null; // Cache thông tin thanh toán từ server
+
+    // Helper: cập nhật UI cards theo plan hiện tại
+    function _updatePricingUI(plan) {
+      const cardPro = document.getElementById('cardPro');
+      const cardVip = document.getElementById('cardVip');
+      const cardLifetime = document.getElementById('cardLifetime');
+      const lifetimeBanner = document.getElementById('lifetimeBanner');
+      const planCardsGrid = document.getElementById('planCardsGrid');
+      const pricingLabel = document.getElementById('pricingLabel');
+      const pricingFooter = document.getElementById('pricingFooter');
+
+      if (!planCardsGrid) return;
+
+      if (plan === 'lifetime') {
+        planCardsGrid.style.display = 'none';
+        if (lifetimeBanner) lifetimeBanner.style.display = 'block';
+        if (pricingLabel) pricingLabel.textContent = 'Gói của bạn';
+        if (pricingFooter) pricingFooter.style.display = 'none';
+      } else if (plan === 'vip') {
+        planCardsGrid.style.display = 'grid';
+        planCardsGrid.style.gridTemplateColumns = '1fr';
+        if (cardPro) cardPro.style.display = 'none';
+        if (cardVip) cardVip.style.display = 'none';
+        if (cardLifetime) cardLifetime.style.display = 'block';
+        if (lifetimeBanner) lifetimeBanner.style.display = 'none';
+        if (pricingLabel) pricingLabel.textContent = 'Nâng cấp lên Lifetime';
+        if (pricingFooter) pricingFooter.style.display = 'block';
+      } else if (plan === 'pro') {
+        planCardsGrid.style.display = 'grid';
+        planCardsGrid.style.gridTemplateColumns = '1fr 1fr';
+        if (cardPro) cardPro.style.display = 'none';
+        if (cardVip) cardVip.style.display = 'block';
+        if (cardLifetime) cardLifetime.style.display = 'block';
+        if (lifetimeBanner) lifetimeBanner.style.display = 'none';
+        if (pricingLabel) pricingLabel.textContent = 'Nâng cấp lên VIP / Lifetime';
+        if (pricingFooter) pricingFooter.style.display = 'block';
+      } else {
+        // Trial: hiện cả 3
+        planCardsGrid.style.display = 'grid';
+        planCardsGrid.style.gridTemplateColumns = '1fr 1fr 1fr';
+        if (cardPro) cardPro.style.display = 'block';
+        if (cardVip) cardVip.style.display = 'block';
+        if (cardLifetime) cardLifetime.style.display = 'block';
+        if (lifetimeBanner) lifetimeBanner.style.display = 'none';
+        if (pricingLabel) pricingLabel.textContent = 'Nâng cấp gói';
+        if (pricingFooter) pricingFooter.style.display = 'block';
+      }
+    }
+
+    async function openAccountModal() {
+      document.getElementById('accountModal').style.display = 'flex';
+
+      let currentPlan = 'trial';
+
+      // Lấy thông tin user hiện tại từ API status
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+        if (data.loggedIn && data.user) {
+          const u = data.user;
+          currentPlan = u.plan || 'trial';
+
+          document.getElementById('acctName').textContent = u.name || u.email || '—';
+          document.getElementById('acctEmail').textContent = u.email || '—';
+
+          const plan = currentPlan.toUpperCase();
+          const badge = document.getElementById('acctPlanBadge');
+          badge.textContent = plan;
+          const planColors = {
+            TRIAL: { bg: 'rgba(251,191,36,0.15)', color: '#fbbf24' },
+            PRO: { bg: 'rgba(138,92,246,0.2)', color: '#a78bfa' },
+            LIFETIME: { bg: 'rgba(52,211,153,0.15)', color: '#34d399' }
+          };
+          const c = planColors[plan] || planColors.TRIAL;
+          badge.style.background = c.bg;
+          badge.style.color = c.color;
+
+          // Hiện ngày hết hạn
+          const expiryEl = document.getElementById('acctExpiry');
+          if (currentPlan === 'lifetime') {
+            expiryEl.textContent = '♾ Vĩnh viễn';
+            expiryEl.style.color = '#34d399';
+          } else if (u.expires_at) {
+            const days = Math.ceil((new Date(u.expires_at) - new Date()) / 86400000);
+            expiryEl.textContent = days > 0 ? `Còn ${days} ngày` : 'Đã hết hạn';
+            expiryEl.style.color = days > 5 ? 'var(--text-muted)' : '#ef4444';
+          } else {
+            expiryEl.textContent = '';
+          }
+        }
+      } catch (e) {
+        console.warn('[Account Modal] Lỗi lấy user info:', e.message);
+      }
+
+      // Cập nhật pricing cards ngay theo plan (trước khi fetch giá từ server)
+      _updatePricingUI(currentPlan);
+
+      // Lấy thông tin giá từ server để cập nhật số tiền
+      try {
+        const res = await fetch('/api/auth/payment-info');
+        const data = await res.json();
+        if (data.success) {
+          _paymentInfo = data;
+          const proPrice = data.plans?.pro?.price || 99000;
+          const vipPrice = data.plans?.vip?.price || 1200000;
+          const lifetimePrice = data.plans?.lifetime?.price || 1900000;
+          const proDays = data.plans?.pro?.days || 30;
+
+          const eP = document.getElementById('pricePro'); if (eP) eP.textContent = proPrice.toLocaleString('vi-VN') + 'đ';
+          const eV = document.getElementById('priceVip'); if (eV) eV.textContent = vipPrice.toLocaleString('vi-VN') + 'đ';
+          const eL = document.getElementById('priceLifetime'); if (eL) eL.textContent = lifetimePrice.toLocaleString('vi-VN') + 'đ';
+          const eD = document.getElementById('durationPro'); if (eD) eD.textContent = `/${proDays} ngày`;
+          const bP = document.getElementById('btnBuyPro'); if (bP) bP.textContent = `Mua Pro — ${proPrice.toLocaleString('vi-VN')}đ`;
+          const bL = document.getElementById('btnBuyLifetime'); if (bL) bL.textContent = `Mua Lifetime — ${lifetimePrice.toLocaleString('vi-VN')}đ`;
+        }
+      } catch (e) {
+        console.warn('[Account Modal] Lỗi lấy payment info:', e.message);
+      }
+    }
+
+    function closeAccountModal() {
+      document.getElementById('accountModal').style.display = 'none';
+    }
+
+    // ═══ Payment QR Modal ═══
+    let _selectedPlan = 'pro';
+
+    async function openPaymentModal(plan) {
+      _selectedPlan = plan || 'pro';
+
+      // Đóng account modal, mở payment modal
+      closeAccountModal();
+      document.getElementById('paymentModal').style.display = 'flex';
+      document.getElementById('paymentLoading').style.display = 'block';
+      document.getElementById('paymentContent').style.display = 'none';
+      document.getElementById('paymentError').style.display = 'none';
+
+      try {
+        // Dùng cache nếu có, nếu không thì fetch
+        let info = _paymentInfo;
+        if (!info) {
+          const res = await fetch('/api/auth/payment-info');
+          info = await res.json();
+          if (info.success) _paymentInfo = info;
+        }
+
+        if (!info || !info.success) {
+          throw new Error(info?.error || 'Không nhận được dữ liệu từ server');
+        }
+
+        const bank = info.bank || {};
+        const plans = info.plans || {};
+        const code = info.paymentCode || 'wfbm00000';
+        const price = plans[_selectedPlan]?.price || (plan === 'lifetime' ? 1900000 : 99000);
+        const amount = price;
+
+        // Điền thông tin ngân hàng
+        document.getElementById('pmBankName').textContent = bank.name || 'BIDV';
+        document.getElementById('pmAccountNumber').textContent = bank.accountNumber || '—';
+        document.getElementById('pmAccountName').textContent = bank.accountName || '—';
+        document.getElementById('pmAmount').textContent = amount.toLocaleString('vi-VN') + 'đ';
+        document.getElementById('pmPaymentCode').textContent = code;
+
+        // 🔔 Ghi pending session vào DB (fire-and-forget, không block UI)
+        fetch('/api/auth/payment-session/start', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: _selectedPlan, amount })
+        }).catch(() => { });
+
+        // Tạo QR bằng VietQR API (KHÔNG cần backend, gọi thẳng)
+        // Format: https://img.vietqr.io/image/{bankCode}-{accountNumber}-{template}.png?amount=X&addInfo=Y&accountName=Z
+        const bankCode = bank.code || 'BIDV';
+        const acctNum = (bank.accountNumber || '').replace(/\s/g, '');
+        const qrUrl = `https://img.vietqr.io/image/${bankCode}-${acctNum}-compact2.png`
+          + `?amount=${amount}`
+          + `&addInfo=${encodeURIComponent(code)}`
+          + `&accountName=${encodeURIComponent(bank.accountName || '')}`;
+
+        const qrImg = document.getElementById('qrImage');
+        qrImg.onload = () => {
+          document.getElementById('paymentLoading').style.display = 'none';
+          document.getElementById('paymentContent').style.display = 'block';
+          // Bắt đầu auto-poll sau khi QR hiện ra, truyền plan hiện tại để detect thay đổi
+          _startPaymentPoll(info.currentPlan || 'trial');
+        };
+        qrImg.onerror = () => {
+          document.getElementById('paymentLoading').style.display = 'none';
+          document.getElementById('paymentContent').style.display = 'block';
+          qrImg.style.display = 'none';
+          _startPaymentPoll(info.currentPlan || 'trial');
+        };
+        qrImg.src = qrUrl;
+
+      } catch (e) {
+        document.getElementById('paymentLoading').style.display = 'none';
+        document.getElementById('paymentError').style.display = 'block';
+        document.getElementById('paymentErrorMsg').textContent = e.message || 'Không thể tải thông tin thanh toán';
+        console.error('[Payment Modal] Lỗi:', e.message);
+      }
+    }
+
+    function closePaymentModal() {
+      document.getElementById('paymentModal').style.display = 'none';
+      _stopPaymentPoll();
+    }
+
+    // ─── Auto-poll thanh toán ──────────────────────────────────────────────
+    let _paymentPollTimer = null;
+    let _paymentPollCount = 0;
+    const PAYMENT_POLL_INTERVAL = 15000; // 15 giây
+    const PAYMENT_POLL_MAX = 40;    // tối đa 10 phút
+
+    function _stopPaymentPoll() {
+      if (_paymentPollTimer) {
+        clearInterval(_paymentPollTimer);
+        _paymentPollTimer = null;
+        _paymentPollCount = 0;
+      }
+    }
+
+    function _startPaymentPoll(planBeforePurchase) {
+      _stopPaymentPoll();
+      _paymentPollCount = 0;
+
+      _paymentPollTimer = setInterval(async () => {
+        _paymentPollCount++;
+        if (_paymentPollCount > PAYMENT_POLL_MAX) {
+          _stopPaymentPoll();
+          document.getElementById('paymentCheckNote').textContent = 'Hết thời gian tự động kiểm tra. Bấm nút để kiểm tra thủ công.';
+          return;
+        }
+
+        const remaining = PAYMENT_POLL_MAX - _paymentPollCount;
+        document.getElementById('paymentCheckNote').textContent =
+          `Tự động kiểm tra mỗi 15 giây (còn ${remaining * 15}s)`;
+
+        await _doPollCheck(planBeforePurchase);
+      }, PAYMENT_POLL_INTERVAL);
+    }
+
+    async function _doPollCheck(planBefore) {
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+        if (!data.loggedIn) return;
+
+        const currentPlan = data.user?.plan || 'trial';
+        if (currentPlan !== planBefore && currentPlan !== 'trial') {
+          // Plan đã được upgrade!
+          _stopPaymentPoll();
+          closePaymentModal();
+
+          // Refresh user badge
+          const nameEl = document.getElementById('userName');
+          const planEl = document.getElementById('userPlanBadge');
+          if (nameEl && data.user) {
+            nameEl.textContent = data.user.name || data.user.email;
+            const plan = currentPlan.toUpperCase();
+            planEl.textContent = plan;
+            const planColors = {
+              PRO: { bg: 'rgba(138,92,246,0.2)', color: '#a78bfa' },
+              LIFETIME: { bg: 'rgba(52,211,153,0.15)', color: '#34d399' }
+            };
+            const c = planColors[plan] || {};
+            if (c.bg) {
+              planEl.style.background = c.bg;
+              planEl.style.color = c.color;
+            }
+          }
+
+          // Invalidate cache để lần sau load lại
+          _paymentInfo = null;
+
+          // Toast thành công
+          if (typeof showToast === 'function') {
+            const label = currentPlan === 'lifetime' ? 'Lifetime ♾' : `Pro (30 ngày)`;
+            showToast(`🎉 Nâng cấp thành công lên ${label}!`, 'success', 6000);
+          }
+        }
+      } catch (e) {
+        console.warn('[Poll] Lỗi kiểm tra trạng thái:', e.message);
+      }
+    }
+
+    async function checkPaymentStatus() {
+      const btn = document.getElementById('btnCheckPayment');
+      const note = document.getElementById('paymentCheckNote');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;animation:spin 1s linear infinite">refresh</span> Đang kiểm tra...';
+
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+        const currentPlan = data.user?.plan || 'trial';
+
+        if (currentPlan === 'pro' || currentPlan === 'lifetime') {
+          await _doPollCheck('trial'); // trigger upgrade handler
+        } else {
+          note.textContent = 'Chưa nhận được thanh toán. Vui lòng chờ...';
+          setTimeout(() => {
+            note.textContent = 'Tự động kiểm tra mỗi 15 giây';
+          }, 3000);
+        }
+      } catch (e) {
+        note.textContent = 'Lỗi kết nối. Thử lại sau.';
+      } finally {
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:16px;">refresh</span> Kiểm tra thanh toán';
+        }, 2000);
+      }
+    }
+
+    function copyPaymentCode() {
+      const code = document.getElementById('pmPaymentCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('btnCopyCode');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<span class="material-symbols-rounded" style="font-size:15px;color:#34d399">check</span> Đã copy!';
+        setTimeout(() => { btn.innerHTML = orig; }, 2000);
+      }).catch(() => {
+        // Fallback cho môi trường không có clipboard API
+        const ta = document.createElement('textarea');
+        ta.value = code;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+      });
+    }
+  </script>
+
+  <!-- ═══ AUTO-UPDATE BANNER ═══ -->
+  <div id="updateBanner" style="
+    display: none;
+    position: fixed; top: 0; left: 0; right: 0; z-index: 9999;
+    background: linear-gradient(90deg, #1a1a2e, #16213e, #0f3460);
+    border-bottom: 1px solid rgba(99,102,241,0.4);
+    padding: 10px 20px;
+    align-items: center; gap: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    animation: slideDown 0.3s ease;
+  ">
+    <span class="material-symbols-rounded" id="updateIcon"
+      style="font-size:20px; color:#818cf8; flex-shrink:0;">system_update</span>
+    <div style="flex:1; min-width:0;">
+      <div style="font-size:13px; font-weight:600; color:#e0e7ff;" id="updateTitle">Đang kiểm tra cập nhật...</div>
+      <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="updateSubtitle"></div>
+      <!-- Progress bar (ẩn mặc định) -->
+      <div id="updateProgressWrap" style="display:none; margin-top:6px;">
+        <div style="height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+          <div id="updateProgressBar"
+            style="height:100%; width:0%; background:linear-gradient(90deg,#6366f1,#a78bfa); border-radius:2px; transition:width 0.3s;">
+          </div>
+        </div>
+        <div style="font-size:10px; color:#64748b; margin-top:3px;" id="updateProgressText"></div>
+      </div>
+    </div>
+    <button id="updateActionBtn" onclick="installUpdate()" style="
+      display:none;
+      padding: 7px 16px; border-radius: 8px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white; font-size: 12px; font-weight: 600;
+      white-space: nowrap; flex-shrink: 0;
+      transition: opacity 0.2s;
+    " onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+      <span class="material-symbols-rounded"
+        style="font-size:14px; vertical-align:middle; margin-right:4px;">download</span>
+      Cài ngay & Khởi động lại
+    </button>
+    <button onclick="document.getElementById('updateBanner').style.display='none'" style="
+      background:none; border:none; cursor:pointer; color:#64748b; padding:4px; flex-shrink:0;
+    " title="Ẩn thông báo">
+      <span class="material-symbols-rounded" style="font-size:18px;">close</span>
+    </button>
+  </div>
+
+  <style>
+    @keyframes slideDown {
+      from {
+        transform: translateY(-100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+  </style>
+
+  <!-- ═══ STORE: QR PAYMENT MODAL ═══ -->
+  <div id="storePaymentModal"
+    style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+    <div
+      style="background:linear-gradient(135deg,#0f172a,#1e1b4b); border:1px solid rgba(139,92,246,0.3); border-radius:20px; padding:32px; width:420px; max-width:95vw; position:relative; box-shadow:0 32px 80px rgba(0,0,0,0.5);">
+      <!-- Close -->
+      <button onclick="closeStorePaymentModal()"
+        style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.05); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#94a3b8;">
+        <span class="material-symbols-rounded" style="font-size:18px;">close</span>
+      </button>
+
+      <!-- Header -->
+      <div style="text-align:center; margin-bottom:20px;">
+        <div
+          style="width:48px; height:48px; border-radius:12px; background:linear-gradient(135deg,#8b5cf6,#6366f1); display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+          <span class="material-symbols-rounded" style="font-size:24px; color:white;">qr_code_2</span>
+        </div>
+        <h3 style="font-size:16px; font-weight:700; color:#f8fafc; margin:0 0 4px;">Thanh toán sản phẩm</h3>
+        <p id="spProductName" style="font-size:13px; color:#8b5cf6; margin:0;"></p>
+      </div>
+
+      <!-- Loading -->
+      <div id="spLoading" style="display:none; text-align:center; padding:20px 0;">
+        <div
+          style="width:32px;height:32px;border:3px solid rgba(255,255,255,0.1);border-top-color:#8b5cf6;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 10px;">
+        </div>
+        <p style="font-size:13px; color:#64748b;">Đang tạo đơn hàng...</p>
+      </div>
+
+      <!-- Content -->
+      <div id="spContent" style="display:none;">
+        <!-- QR Code -->
+        <div style="background:white; border-radius:12px; padding:12px; text-align:center; margin-bottom:16px;">
+          <img id="spQrImage" src="" alt="QR Code" style="width:180px; height:180px; object-fit:contain;">
+        </div>
+
+        <!-- Bank info -->
+        <div
+          style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px; margin-bottom:14px; font-size:13px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="color:#64748b;">Ngân hàng</span>
+            <span id="spBankName" style="color:#f8fafc; font-weight:600;"></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="color:#64748b;">Số tài khoản</span>
+            <span id="spAcctNum" style="color:#f8fafc; font-weight:600;"></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="color:#64748b;">Chủ tài khoản</span>
+            <span id="spAcctName" style="color:#f8fafc;"></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+            <span style="color:#64748b;">Số tiền</span>
+            <span id="spAmount" style="color:#34d399; font-weight:700; font-size:15px;"></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="color:#64748b;">Nội dung CK</span>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <code id="spPayCode"
+                style="color:#fbbf24; font-size:11px; background:rgba(251,191,36,0.1); padding:3px 8px; border-radius:6px;"></code>
+              <button id="spCopyBtn" onclick="copyStorePayCode()"
+                style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:3px 8px; cursor:pointer; color:#94a3b8; font-size:11px; display:flex; align-items:center; gap:3px;">
+                <span class="material-symbols-rounded" style="font-size:12px;">content_copy</span> Copy
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warning -->
+        <div
+          style="background:rgba(251,191,36,0.07); border:1px solid rgba(251,191,36,0.2); border-radius:8px; padding:10px 12px; margin-bottom:14px;">
+          <p style="font-size:11px; color:#fbbf24; margin:0; line-height:1.5;">
+            ⚠️ Nhập <strong>đúng nội dung chuyển khoản</strong> để hệ thống xác nhận tự động. Sai nội dung có thể mất
+            thêm thời gian xử lý.
+          </p>
+        </div>
+
+        <!-- Poll status -->
+        <div id="spPollStatus" style="text-align:center; font-size:12px; color:#64748b; margin-bottom:12px;">
+          Đang chờ thanh toán...
+        </div>
+
+        <!-- Manual check -->
+        <button id="spCheckBtn" onclick="checkStorePayment()"
+          style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(139,92,246,0.4); background:rgba(139,92,246,0.1); color:#a78bfa; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:6px; transition:all 0.2s;">
+          <span class="material-symbols-rounded" style="font-size:16px;">refresh</span> Kiểm tra thanh toán
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div id="spError" style="display:none; text-align:center; padding:20px 0; color:#ef4444;">
+        <span class="material-symbols-rounded" style="font-size:40px;">error</span>
+        <p id="spErrorMsg" style="font-size:13px; margin:8px 0;"></p>
+        <button onclick="closeStorePaymentModal()"
+          style="padding:8px 18px; border-radius:8px; border:1px solid rgba(239,68,68,0.3); background:rgba(239,68,68,0.1); color:#ef4444; cursor:pointer; font-size:13px;">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STORE: PRODUCT RESULT MODAL ═══ -->
+  <div id="storeResultModal"
+    style="display:none; position:fixed; inset:0; z-index:9001; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+    <div
+      style="background:linear-gradient(135deg,#0f172a,#052e16); border:1px solid rgba(52,211,153,0.3); border-radius:20px; padding:32px; width:480px; max-width:95vw; max-height:85vh; overflow-y:auto; position:relative; box-shadow:0 32px 80px rgba(0,0,0,0.5);">
+      <!-- Close -->
+      <button onclick="closeStoreResultModal()"
+        style="position:absolute; top:16px; right:16px; background:rgba(255,255,255,0.05); border:none; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#94a3b8;">
+        <span class="material-symbols-rounded" style="font-size:18px;">close</span>
+      </button>
+
+      <!-- Success header -->
+      <div style="text-align:center; margin-bottom:24px;">
+        <div
+          style="width:56px; height:56px; border-radius:50%; background:rgba(52,211,153,0.15); border:2px solid rgba(52,211,153,0.4); display:flex; align-items:center; justify-content:center; margin:0 auto 12px; animation:pulse 2s infinite;">
+          <span class="material-symbols-rounded" style="font-size:28px; color:#34d399;">check_circle</span>
+        </div>
+        <h3 style="font-size:18px; font-weight:700; color:#f8fafc; margin:0 0 4px;">Mua hàng thành công!</h3>
+        <p id="srProductName" style="font-size:13px; color:#34d399; margin:0;"></p>
+      </div>
+
+      <!-- Product data display area -->
+      <div id="srProductData"
+        style="background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:16px; margin-bottom:20px; min-height:80px;">
+        <!-- Filled dynamically by JS -->
+      </div>
+
+      <!-- Action footer -->
+      <div style="display:flex; gap:10px;">
+        <button onclick="closeStoreResultModal()"
+          style="flex:1; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#94a3b8; cursor:pointer; font-size:13px;">
+          Đóng
+        </button>
+        <button onclick="closeStoreResultModal(); switchTab('storeTab')"
+          style="flex:1; padding:10px; border-radius:10px; border:none; background:linear-gradient(135deg,#34d399,#10b981); color:white; cursor:pointer; font-size:13px; font-weight:600;">
+          <span class="material-symbols-rounded" style="font-size:14px; vertical-align:middle;">storefront</span> Xem
+          thêm sản phẩm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ STORE: PRODUCT DETAIL MODAL ═══ -->
+  <div id="storeDetailModal"
+    style="display:none; position:fixed; inset:0; z-index:8999; background:rgba(0,0,0,0.8); backdrop-filter:blur(10px); align-items:center; justify-content:center; padding:16px;"
+    onclick="if(event.target===this) closeStoreDetail()">
+    <div
+      style="background:linear-gradient(135deg,#0f172a,#1e1b4b); border:1px solid rgba(139,92,246,0.25); border-radius:22px; width:800px; max-width:96vw; max-height:90vh; overflow-y:auto; position:relative; box-shadow:0 40px 100px rgba(0,0,0,0.7);">
+      <!-- Close button -->
+      <button onclick="closeStoreDetail()"
+        style="position:sticky; top:14px; left:calc(100% - 48px); z-index:10; float:right; margin:14px 14px 0 0; background:rgba(0,0,0,0.5); border:none; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:#94a3b8; backdrop-filter:blur(4px);">
+        <span class="material-symbols-rounded" style="font-size:18px;">close</span>
+      </button>
+
+      <!-- ── SECTION 1: Hero 2 cột (ảnh trái + info phải) ── -->
+      <div style="display:flex; gap:0; min-height:320px; align-items:stretch;">
+
+        <!-- CỘT TRÁI: Ảnh + gallery strip -->
+        <div id="sdLeftCol"
+          style="width:45%; min-width:200px; display:flex; flex-direction:column; flex-shrink:0; border-radius:22px 0 0 0; overflow:hidden; background:rgba(0,0,0,0.4);">
+          <!-- Ảnh chính -->
+          <div id="sdThumbWrap"
+            style="flex:1; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; min-height:260px;">
+            <img id="sdThumbImg" src="" alt=""
+              style="width:100%; height:100%; object-fit:contain; object-position:center; display:none; cursor:zoom-in;"
+              onclick="openLightbox(this.src, window._sdAllImages, window._sdCurrentImgIdx||0)"
+              onerror="this.style.display='none';document.getElementById('sdThumbIcon').style.display='flex'">
+            <div id="sdThumbIcon"
+              style="display:flex; flex-direction:column; align-items:center; gap:8px; padding:40px;">
+              <span id="sdCatIcon" class="material-symbols-rounded"
+                style="font-size:72px; color:#8b5cf6;">widgets</span>
+            </div>
+            <!-- Nút phóng to -->
+            <button id="sdZoomBtn"
+              onclick="openLightbox(document.getElementById('sdThumbImg').src, window._sdAllImages, window._sdCurrentImgIdx||0)"
+              style="display:none; position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.6); border:none; border-radius:8px; padding:4px 10px; color:white; cursor:pointer; font-size:12px; align-items:center; gap:4px; backdrop-filter:blur(4px);"
+              onmouseover="this.style.background='rgba(0,0,0,0.85)'"
+              onmouseout="this.style.background='rgba(0,0,0,0.6)'">
+              <span class="material-symbols-rounded" style="font-size:14px; vertical-align:middle;">zoom_in</span> Phóng
+              to
+            </button>
+          </div>
+          <!-- Gallery strip inject bởi JS bên dưới sdThumbWrap -->
+        </div>
+
+        <!-- CỘT PHẢI: Thông tin + Mua -->
+        <div
+          style="flex:1; padding:24px 22px 20px; display:flex; flex-direction:column; justify-content:space-between; min-width:0; overflow:hidden;">
+          <!-- Badges -->
+          <div style="min-width:0;">
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:10px; flex-wrap:wrap;">
+              <span id="sdCatBadge"
+                style="font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(139,92,246,0.2); color:#a78bfa;"></span>
+              <span id="sdFreeBadge"
+                style="display:none; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; background:rgba(52,211,153,0.15); color:#34d399;">MIỄN
+                PHÍ</span>
+            </div>
+            <!-- Title -->
+            <h2 id="sdTitle"
+              style="font-size:15px; font-weight:700; color:#f8fafc; margin:0 0 10px; line-height:1.4; word-break:break-word; overflow-wrap:break-word;">
+            </h2>
+            <!-- Short desc -->
+            <p id="sdDescShort"
+              style="font-size:12px; color:#94a3b8; margin:0 0 14px; line-height:1.6; word-break:break-word; overflow:hidden; display:-webkit-box; line-clamp:6; -webkit-line-clamp:6; box-orient:vertical; -webkit-box-orient:vertical;">
+            </p>
+          </div>
+
+          <!-- Price + Buy button -->
+          <div
+            style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; padding:14px;">
+            <div style="font-size:10px; color:#64748b; margin-bottom:4px;">Giá</div>
+            <div id="sdPrice"
+              style="font-size:20px; font-weight:800; color:#f8fafc; margin-bottom:12px; word-break:break-word;"></div>
+            <button id="sdBuyBtn" onclick=""
+              style="width:100%; padding:12px 16px; border-radius:10px; border:none; font-size:13px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+              <span class="material-symbols-rounded" style="font-size:17px; flex-shrink:0;">shopping_cart</span>
+              Mua ngay
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gallery strip (ảnh nhỏ, click → lightbox) — nằm giữa 2 sections -->
+      <!-- Được inject bởi JS vào sau sdThumbWrap -->
+
+      <!-- ── SECTION 2: Mô tả chi tiết (scroll xuống để xem) ── -->
+      <div style="padding:24px 28px; border-top:1px solid rgba(255,255,255,0.07);">
+        <div
+          style="font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; color:#64748b; margin-bottom:12px;">
+          Mô tả chi tiết
+        </div>
+        <p id="sdDesc" style="font-size:13px; color:#94a3b8; margin:0; line-height:1.8; white-space:pre-wrap;"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ LIGHTBOX IMAGE VIEWER ═══ -->
+  <div id="lightboxOverlay" onclick="closeLightbox()" style="
+    display:none; position:fixed; inset:0; z-index:99999;
+    background:rgba(0,0,0,0.93); backdrop-filter:blur(16px);
+    flex-direction:row; align-items:center; justify-content:center; cursor:zoom-out;
+    gap:16px;
+  ">
+    <!-- Close button -->
+    <button onclick="event.stopPropagation(); closeLightbox()" style="
+      position:absolute; top:16px; right:16px; z-index:2;
+      background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+      border-radius:50%; width:40px; height:40px;
+      display:flex; align-items:center; justify-content:center;
+      cursor:pointer; color:white; transition:0.2s;
+    " onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-rounded" style="font-size:20px;">close</span>
+    </button>
+
+    <!-- Nav prev -->
+    <button id="lbPrev" onclick="event.stopPropagation(); lightboxNav(-1)" style="
+      position:absolute; left:16px; top:50%; transform:translateY(-50%); z-index:2;
+      background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+      border-radius:50%; width:44px; height:44px;
+      display:none; align-items:center; justify-content:center;
+      cursor:pointer; color:white; transition:0.2s;
+    " onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-rounded" style="font-size:22px;">chevron_left</span>
+    </button>
+
+    <!-- Nav next -->
+    <button id="lbNext" onclick="event.stopPropagation(); lightboxNav(1)" style="
+      position:absolute; right:100px; top:50%; transform:translateY(-50%); z-index:2;
+      background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15);
+      border-radius:50%; width:44px; height:44px;
+      display:none; align-items:center; justify-content:center;
+      cursor:pointer; color:white; transition:0.2s;
+    " onmouseover="this.style.background='rgba(255,255,255,0.2)'"
+      onmouseout="this.style.background='rgba(255,255,255,0.1)'">
+      <span class="material-symbols-rounded" style="font-size:22px;">chevron_right</span>
+    </button>
+
+    <!-- Image + Right Strip wrapper -->
+    <div onclick="event.stopPropagation()" style="
+      display:flex; flex-direction:row; align-items:center; gap:12px;
+      max-height:80vh; position:relative;
+    ">
+      <!-- Main image -->
+      <img id="lightboxImg" src="" alt="" onclick="event.stopPropagation()" style="
+        max-width:70vw; max-height:70vh;
+        object-fit:contain;
+        border-radius:12px;
+        box-shadow:0 24px 80px rgba(0,0,0,0.8);
+        animation:lbFadeIn 0.2s ease;
+        cursor:default; flex-shrink:0; display:block;
+      ">
+
+      <!-- Right-side thumbnail slider -->
+      <div id="lbThumbStrip" onclick="event.stopPropagation()" style="
+        display:none;
+        flex-direction:column;
+        gap:6px;
+        max-height:70vh;
+        overflow-y:auto;
+        overflow-x:hidden;
+        padding:4px 2px;
+        width:76px;
+        flex-shrink:0;
+        scrollbar-width:thin;
+        scrollbar-color:rgba(255,255,255,0.15) transparent;
+      "></div>
+    </div>
+
+    <!-- Counter indicator -->
+    <div id="lbCounter" style="
+      position:absolute; bottom:18px; left:50%;
+      transform:translateX(-50%);
+      font-size:12px; color:rgba(255,255,255,0.6);
+      letter-spacing:1px; display:none;
+      background:rgba(0,0,0,0.6); padding:4px 14px; border-radius:20px;
+      pointer-events:none;
+    "></div>
+  </div>
+
+  <style>
+    @keyframes lbFadeIn {
+      from {
+        opacity: 0;
+        transform: scale(0.94);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    #lbThumbStrip::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    #lbThumbStrip::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #lbThumbStrip::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+  </style>
+
+  <script src="/socket.io/socket.io.js"></script>
+
+  <script src="workflow-builder.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Nhan trang thai workflow builder tu server de cap nhat nut
+    document.addEventListener('DOMContentLoaded', () => {
+      // Doi socket khoi tao xong (trong app.js)
+      const waitSocket = setInterval(() => {
+        if (typeof socket !== 'undefined' && socket) {
+          clearInterval(waitSocket);
+          socket.on('wf-builder-status', (data) => {
+            if (typeof WFB !== 'undefined' && typeof WFB.setWfbButtons === 'function') {
+              WFB.setWfbButtons(data.state || 'idle');
+            }
+            if (data.message && typeof showToast === 'function') {
+              const type = data.state === 'idle' ? (data.message.includes('\u274c') ? 'error' : 'success') : 'warning';
+              showToast(data.message, type);
+            }
+          });
+        }
+      }, 200);
+    });
+
+    // ─── Auto-Update IPC (chỉ hoạt động trong Electron) ─────────────────────
+    function installUpdate() {
+      if (window._ipcRenderer) window._ipcRenderer.send('update:install');
+    }
+
+    function showUpdateBanner(title, subtitle, { icon, showProgress, showBtn } = {}) {
+      const banner = document.getElementById('updateBanner');
+      banner.style.display = 'flex';
+      document.getElementById('updateTitle').textContent = title;
+      document.getElementById('updateSubtitle').textContent = subtitle || '';
+      if (icon) document.getElementById('updateIcon').textContent = icon;
+      document.getElementById('updateProgressWrap').style.display = showProgress ? 'block' : 'none';
+      document.getElementById('updateActionBtn').style.display = showBtn ? '' : 'none';
+      // Đẩy nội dung xuống để không bị banner che
+      document.querySelector('.app-v2').style.marginTop = '48px';
+    }
+
+    function hideUpdateBanner() {
+      document.getElementById('updateBanner').style.display = 'none';
+      document.querySelector('.app-v2').style.marginTop = '';
+    }
+
+    // Khởi động ipcRenderer nếu đang chạy trong Electron
+    (function initUpdaterIPC() {
+      try {
+        // nodeIntegration: true → có thể require trực tiếp
+        const { ipcRenderer } = require('electron');
+        window._ipcRenderer = ipcRenderer;
+
+        ipcRenderer.on('update:checking', () => {
+          // Không show banner khi chỉ đang check — im lặng
+        });
+
+        ipcRenderer.on('update:available', (_, info) => {
+          showUpdateBanner(
+            `Có bản mới: v${info.version}`,
+            `Đang tải về nền... Bạn có thể tiếp tục làm việc bình thường.`,
+            { icon: 'system_update_alt' }
+          );
+        });
+
+        ipcRenderer.on('update:not-available', () => {
+          // Không cần thông báo nếu đang dùng bản mới nhất
+        });
+
+        ipcRenderer.on('update:progress', (_, prog) => {
+          const bar = document.getElementById('updateProgressBar');
+          const txt = document.getElementById('updateProgressText');
+          showUpdateBanner(
+            `Đang tải bản cập nhật... ${prog.percent}%`,
+            `${prog.transferred} / ${prog.total} — ${prog.bytesPerSecond}`,
+            { icon: 'downloading', showProgress: true }
+          );
+          if (bar) bar.style.width = prog.percent + '%';
+          if (txt) txt.textContent = `${prog.transferred} / ${prog.total} (${prog.bytesPerSecond})`;
+        });
+
+        ipcRenderer.on('update:downloaded', (_, info) => {
+          showUpdateBanner(
+            `✅ v${info.version} đã sẵn sàng cài đặt`,
+            `Nhấn "Cài ngay" để khởi động lại và áp dụng bản cập nhật.`,
+            { icon: 'download_done', showBtn: true }
+          );
+        });
+
+        ipcRenderer.on('update:error', (_, err) => {
+          // Lỗi update không nghiêm trọng — chỉ log, không show banner
+          console.warn('[Updater] Lỗi:', err.message);
+          hideUpdateBanner();
+        });
+
+        // Lấy version hiện tại hiển thị trên topnav
+        ipcRenderer.send('app:version');
+        ipcRenderer.on('app:version-reply', (_, version) => {
+          const titleEl = document.querySelector('.topnav-title');
+          if (titleEl) titleEl.title = `v${version}`;
+
+          // Thêm version badge nhỏ bên cạnh logo
+          const logo = document.querySelector('.topnav-left');
+          if (logo && !document.getElementById('appVersionBadge')) {
+            const badge = document.createElement('span');
+            badge.id = 'appVersionBadge';
+            badge.textContent = `v${version}`;
+            badge.style.cssText = 'font-size:9px;color:#475569;font-weight:500;padding:2px 5px;background:rgba(255,255,255,0.05);border-radius:4px;border:1px solid rgba(255,255,255,0.08);';
+            const divider = logo.querySelector('.topnav-divider');
+            if (divider) logo.insertBefore(badge, divider);
+          }
+        });
+
+      } catch (e) {
+        // Không phải Electron (browser mode) — bỏ qua
+        console.log('[Updater] Không phải Electron, bỏ qua IPC.');
+      }
+    })();
+  </script>
+</body>
+
+</html>

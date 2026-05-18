@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "VEO3 Captcha Solver",
+  "version": "1.1.0",
+  "description": "Giải captcha reCAPTCHA Enterprise cho VEO3 API. Kết nối socket tới captcha_server.js.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://labs.google/*",
+    "http://localhost:3456/*",
+    "http://127.0.0.1:3456/*",
+    "http://localhost:3000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://labs.google/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "injected.js",
+        "socket.io.min.js"
+      ],
+      "matches": [
+        "https://labs.google/*"
+      ]
+    }
+  ],
+  "action": {
+    "default_title": "VEO3 Captcha Solver",
+    "default_popup": "popup.html"
+  }
+}

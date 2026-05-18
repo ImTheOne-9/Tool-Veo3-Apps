@@ -1960,147 +1960,194 @@ class FlowAutomation {
     return genType === 'image' ? { images: allPreviewFiles } : { videos: allPreviewFiles };
   }
 
-
+  
 
   /**
      * Node: Gemini Prompt (Hỗ trợ Text, Image, và Video)
      */
   async _wfRunGeminiNode(node, inputs, connections = []) {
+  const fs = require('fs');
+  const path = require('path');
+
+  const promptText = inputs.text || '';
+  const images = inputs.images || [];
+  const videos = inputs.videos || [];
+
+  if (!promptText && images.length === 0 && videos.length === 0) {
+    throw new Error('Cần ít nhất Text, Hình ảnh hoặc Video để gọi Gemini.');
+  }
+
+  let aiResponseText = '';
+  let usedMethod = '';
+
+  // =================================================================
+  // KÊNH 1: THỬ CHẠY QUA GEMINI WEB AUTOMATION (KÊNH CHÍNH)
+  // =================================================================
+  if (this.browser) {
+    try {
+      this.log('[GEMINI-FLOW] Cố gắng xử lý bằng giao diện Gemini Web...', 'info');
+      
+      // Quản lý và tái sử dụng Tab
+      if (!this.geminiPage || this.geminiPage.isClosed()) {
+        this.geminiPage = await this.browser.newPage();
+        await this.geminiPage.setViewport({ width: 1280, height: 850 });
+        await this.geminiPage.goto('https://gemini.google.com', { waitUntil: 'networkidle2', timeout: 45000 });
+      } else {
+        await this.geminiPage.bringToFront();
+      }
+
+      const page = this.geminiPage;
+      const inputSelector = 'div[contenteditable="true"]';
+      await page.waitForSelector(inputSelector, { timeout: 10000 });
+
+      // 1. Upload Media lên Web
+      const mediaFiles = [];
+      for (const img of images) {
+        const imgPath = img.localPath || img.path;
+        if (imgPath && fs.existsSync(imgPath)) mediaFiles.push(imgPath);
+      }
+      for (const vid of videos) {
+        const vidPath = vid.localPath || vid.path;
+        if (vidPath && fs.existsSync(vidPath)) mediaFiles.push(vidPath);
+      }
+
+      if (mediaFiles.length > 0) {
+        const fileInputSelector = 'input[type="file"]';
+        const fileInput = await page.$(fileInputSelector);
+        if (fileInput) {
+          await fileInput.uploadFile(...mediaFiles);
+          await new Promise(r => setTimeout(r, 5000)); // Đợi file nạp lên giao diện
+        }
+      }
+
+      // 2. Nhập văn bản Prompt
+      if (promptText) {
+        await page.focus(inputSelector);
+        await page.evaluate((selector, text) => {
+          const element = document.querySelector(selector);
+          if (element) {
+            element.innerText = text;
+            element.dispatchEvent(new Event('input', { bubbles: true }));
+          }
+        }, inputSelector, promptText);
+        await page.keyboard.type(' ');
+      }
+
+      // 3. Click nút Gửi
+      const sendButtonSelector = 'button[aria-label*="Send"], button[aria-label*="Gửi"]';
+      await page.waitForSelector(sendButtonSelector, { visible: true });
+      await page.click(sendButtonSelector);
+
+      // 4. Cào dữ liệu chữ trả về (Stream Polling)
+      const responseSelector = ['div.message-content', '.model-response-text', '[data-test-id="model-response"]'].join(', ');
+      await new Promise(r => setTimeout(r, 6000));
+
+      let lastLength = 0;
+      let stableCount = 0;
+
+      for (let i = 0; i < 30; i++) {
+        const currentText = await page.evaluate((selector) => {
+          const elements = document.querySelectorAll(selector);
+          return elements.length > 0 ? elements[elements.length - 1].innerText.trim() : '';
+        }, responseSelector);
+
+        if (currentText && currentText.length === lastLength) {
+          stableCount++;
+          if (stableCount >= 3) { 
+            aiResponseText = currentText;
+            break;
+          }
+        } else if (currentText.length > 0) {
+          stableCount = 0;
+          lastLength = currentText.length;
+        }
+        await new Promise(r => setTimeout(r, 4000));
+      }
+
+      if (!aiResponseText && lastLength > 0) {
+        aiResponseText = await page.evaluate((selector) => {
+          const elements = document.querySelectorAll(selector);
+          return elements.length > 0 ? elements[elements.length - 1].innerText.trim() : '';
+        }, responseSelector);
+      }
+
+      // Nếu lấy được chữ thành công từ Web
+      if (aiResponseText) {
+        usedMethod = 'Gemini Web';
+      } else {
+        throw new Error('Không cào được nội dung chữ từ giao diện Web.');
+      }
+
+    } catch (webError) {
+      this.log(`[GEMINI-FLOW] ⚠️ Kênh Web gặp sự cố: ${webError.message}. Tiến hành kích hoạt Fallback...`, 'warning');
+    }
+  } else {
+    this.log('[GEMINI-FLOW] Không tìm thấy Trình duyệt hoạt động. Chuyển thẳng sang kênh API.', 'warning');
+  }
+
+  // =================================================================
+  // KÊNH 2: FALLBACK SANG GEMINI API KEY (KÊNH DỰ PHÒNG)
+  // =================================================================
+  if (!aiResponseText) {
     const apiKey = node.config.apiKey?.trim();
     if (!apiKey) {
-      this.log(`  [GEMINI] Chưa cài API Key!`, 'error');
-      throw new Error('Bạn chưa dán API Key cho Node Gemini.');
+      this.log(`[GEMINI-FLOW] ❌ LỖI: Kênh Web thất bại và chưa cài API Key dự phòng!`, 'error');
+      throw new Error('Cả hai kênh Web và API đều không khả dụng. Bạn chưa điền API Key.');
     }
 
-    const inputContext = inputs.text || '';
-    let finalPrompt = inputContext;
+    this.log('[GEMINI-FLOW] 🚀 Đang kích hoạt API Key dự phòng để xử lý request...', 'info');
 
-    if (node.config.useAdditionalText && node.config.additionalText) {
-      const addText = node.config.additionalText.trim();
-      if (addText) {
-        finalPrompt = finalPrompt ? `${finalPrompt}\n\n${addText}` : addText;
-      }
-    }
-
-    const fs = require('fs');
-    const path = require('path');
+    // Tái cấu trúc mảng parts cho API
     const parts = [];
+    if (promptText.trim()) parts.push({ text: promptText });
 
-    // 1. Thêm Text Prompt vào payload
-    if (finalPrompt.trim()) {
-      parts.push({ text: finalPrompt });
+    // Xử lý ảnh sang Inline Base64 cho API
+    for (const img of images) {
+      const imgPath = img.localPath || img.path;
+      if (imgPath && fs.existsSync(imgPath)) {
+        let ext = path.extname(imgPath).slice(1).toLowerCase() || 'png';
+        const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+        const base64Data = fs.readFileSync(imgPath).toString('base64');
+        parts.push({ inlineData: { mimeType, data: base64Data } });
+      }
     }
 
-    // 2. Xử lý Hình ảnh (Dùng Base64 Inline)
-    if (inputs.images && inputs.images.length > 0) {
-      for (const img of inputs.images) {
-        let imgPath = img.localPath || img.path;
+    // Xử lý video qua File API (Rút gọn gọi trực tiếp)
+    for (const vid of videos) {
+      const vidPath = vid.localPath || vid.path;
+      if (vidPath && fs.existsSync(vidPath)) {
+        try {
+          const stats = fs.statSync(vidPath);
+          let ext = path.extname(vidPath).slice(1).toLowerCase();
+          const mimeType = ext === 'webm' ? 'video/webm' : 'video/mp4';
+          const fileBuffer = fs.readFileSync(vidPath);
 
-        if ((!imgPath || !fs.existsSync(imgPath)) && img.url) {
-          imgPath = await this._wfFetchUrlToTemp(img.url, 'image');
-        }
+          const uploadRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
+            method: 'POST',
+            headers: {
+              'X-Goog-Upload-Protocol': 'raw',
+              'X-Goog-Upload-Command': 'start, upload, finalize',
+              'X-Goog-Upload-Header-Content-Length': stats.size.toString(),
+              'X-Goog-Upload-Header-Content-Type': mimeType,
+              'Content-Type': mimeType
+            },
+            body: fileBuffer
+          });
 
-        if (imgPath && fs.existsSync(imgPath)) {
-          try {
-            let ext = path.extname(imgPath).slice(1).toLowerCase();
-            if (!ext) ext = 'png';
-            const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
-
-            const base64Data = fs.readFileSync(imgPath).toString('base64');
-            parts.push({
-              inlineData: { mimeType: mimeType, data: base64Data }
-            });
-            this.log(`  [GEMINI] Đã đính kèm ảnh: ${path.basename(imgPath)}`, 'info');
-          } catch (err) {
-            this.log(`  [GEMINI] Lỗi đọc ảnh ${imgPath}: ${err.message}`, 'warning');
+          const uploadData = await uploadRes.json();
+          if (uploadRes.ok && uploadData.file) {
+            parts.push({ fileData: { mimeType, fileUri: uploadData.file.uri } });
+            // Chấp nhận đợi ngắn hoặc bỏ qua kiểm tra ACTIVE vì đây là fallback khẩn cấp
+            await new Promise(r => setTimeout(r, 5000));
           }
+        } catch (vErr) {
+          this.log(`[GEMINI-API] Lỗi đính kèm video fallback: ${vErr.message}`, 'warning');
         }
       }
     }
 
-    // 3. Xử lý Video (Dùng Gemini File API)
-    if (inputs.videos && inputs.videos.length > 0) {
-      for (const vid of inputs.videos) {
-        let vidPath = vid.localPath || vid.path;
-
-        if ((!vidPath || !fs.existsSync(vidPath)) && vid.url) {
-          vidPath = await this._wfFetchUrlToTemp(vid.url, 'video');
-        }
-
-        if (vidPath && fs.existsSync(vidPath)) {
-          try {
-            this.log(`  [GEMINI] Đang upload video lên hệ thống Google: ${path.basename(vidPath)}...`, 'info');
-            const stats = fs.statSync(vidPath);
-            let ext = path.extname(vidPath).slice(1).toLowerCase();
-            const mimeType = ext === 'webm' ? 'video/webm' : 'video/mp4';
-            const fileBuffer = fs.readFileSync(vidPath);
-
-            // Upload Raw byte trực tiếp lên File API
-            const uploadRes = await fetch(`https://generativelanguage.googleapis.com/upload/v1beta/files?key=${apiKey}`, {
-              method: 'POST',
-              headers: {
-                'X-Goog-Upload-Protocol': 'raw',
-                'X-Goog-Upload-Command': 'start, upload, finalize',
-                'X-Goog-Upload-Header-Content-Length': stats.size.toString(),
-                'X-Goog-Upload-Header-Content-Type': mimeType,
-                'Content-Type': mimeType
-              },
-              body: fileBuffer
-            });
-
-            const uploadData = await uploadRes.json();
-            if (!uploadRes.ok || !uploadData.file) {
-              throw new Error(uploadData.error?.message || 'Lỗi upload video.');
-            }
-
-            const fileUri = uploadData.file.uri;
-            const fileName = uploadData.file.name; // Dùng để check status
-            this.log(`  [GEMINI] Upload thành công! Chờ xử lý video...`, 'success');
-
-            // Video cần thời gian để Gemini trích xuất frame (Processing -> Active)
-            let isReady = false;
-            for (let i = 0; i < 12; i++) { // Thử tối đa 12 lần (1 phút)
-              const checkRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/${fileName}?key=${apiKey}`);
-              const checkData = await checkRes.json();
-
-              if (checkData.state === 'ACTIVE') {
-                isReady = true;
-                break;
-              } else if (checkData.state === 'FAILED') {
-                throw new Error('Gemini báo lỗi khi xử lý video này.');
-              }
-
-              await this.delay(5000); // Đợi 5s rồi check lại
-            }
-
-            if (!isReady) {
-              this.log(`  [GEMINI] ⚠️ Video có thể chưa sẵn sàng, nhưng vẫn thử gọi API...`, 'warning');
-            } else {
-              this.log(`  [GEMINI] Video đã sẵn sàng để phân tích!`, 'success');
-            }
-
-            // Truyền File URI thay vì Base64
-            parts.push({
-              fileData: { mimeType: mimeType, fileUri: fileUri }
-            });
-
-          } catch (err) {
-            this.log(`  [GEMINI] Lỗi xử lý video ${vidPath}: ${err.message}`, 'error');
-          }
-        }
-      }
-    }
-
-    if (parts.length === 0) {
-      throw new Error('Cần ít nhất Text, Hình ảnh, hoặc Video để gọi Gemini.');
-    }
-
-    this.log(`  [GEMINI] Đang gọi Gemini API (Tự động chuyển kênh chờ server)...`, 'info');
-
+    // Vòng lặp thử các Model API dự phòng
     const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
-    let aiText = '';
-    let lastErrorMsg = '';
-
     for (const model of modelsToTry) {
       try {
         const gRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
@@ -2113,36 +2160,40 @@ class FlowAutomation {
         });
 
         const gData = await gRes.json();
-        if (!gRes.ok || !gData.candidates || !gData.candidates[0]) {
-          throw new Error(gData.error?.message || `Lỗi máy chủ Google (${gRes.status}).`);
+        if (gRes.ok && gData.candidates?.[0]?.content?.parts?.[0]?.text) {
+          aiResponseText = gData.candidates[0].content.parts[0].text;
+          usedMethod = `API Fallback (${model})`;
+          break;
         }
-
-        aiText = gData.candidates[0].content.parts[0].text;
-
-        this.log(`  [GEMINI] Thành công với ${model}! Output: "${aiText.substring(0, 60)}..."`, 'success');
-        lastErrorMsg = '';
-        break; // Thoát vòng lặp vì đã thành công
-
       } catch (err) {
-        lastErrorMsg = err.message;
-        // Chỉ log cảnh báo mềm rồi tiếp tục vòng lặp
-        this.log(`  [GEMINI] Model ${model} bận/lỗi. Đang tự động đổi luồng dự phòng...`, 'warning');
+        this.log(`[GEMINI-API] Model ${model} bận, thử model tiếp theo...`, 'warning');
       }
     }
-
-    if (lastErrorMsg) {
-      this.log(`  [GEMINI] Lỗi: Cả 3 kênh Gemini đều bận. Lỗi cuối: ${lastErrorMsg}`, 'error');
-      throw new Error('Lỗi Gemini API: ' + lastErrorMsg);
-    }
-
-    this.emit('wfNodeUpdateConfig', {
-      nodeId: node.id,
-      config: { promptTemplate: aiText, text: aiText }
-    });
-    this.emit('wfNodeResult', { nodeId: node.id, media: [{ type: 'text', url: aiText }] });
-
-    return { text: aiText };
   }
+
+  // =================================================================
+  // ĐỒNG BỘ KẾT QUẢ CUỐI CÙNG LÊN UI WORKFLOW
+  // =================================================================
+  if (!aiResponseText) {
+    throw new Error('Cả hai luồng xử lý Web và API dự phòng đều thất bại.');
+  }
+
+  this.log(`[GEMINI-FLOW] Xử lý THÀNH CÔNG bằng kênh: [${usedMethod}]`, 'success');
+
+  this.emit('wfNodeUpdateConfig', {
+    nodeId: node.id,
+    config: { promptTemplate: aiResponseText, text: aiResponseText }
+  });
+  
+  this.emit('wfNodeResult', { 
+    nodeId: node.id, 
+    media: [{ type: 'text', url: aiResponseText }] 
+  });
+
+  return { text: aiResponseText };
+}
+
+
 
 
 

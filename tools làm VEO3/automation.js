@@ -1969,9 +1969,18 @@ class FlowAutomation {
   const fs = require('fs');
   const path = require('path');
 
-  const promptText = inputs.text || '';
+  let promptText = inputs.text || '';
   const images = inputs.images || [];
   const videos = inputs.videos || [];
+
+  const useAdditional = node.config.useAdditionalText || false;
+  const additionalText = node.config?.additionalText || '';
+
+  // Nếu người dùng bật switch và có nhập nội dung hậu tố, tiến hành nối chuỗi
+  if (useAdditional && additionalText.trim()) {
+    // Thêm một dấu xuống dòng (\n) để ngăn cách text gốc và lệnh phụ một cách sạch sẽ
+    promptText = promptText ? `${promptText}\n${additionalText}` : additionalText;
+  }
 
   if (!promptText && images.length === 0 && videos.length === 0) {
     throw new Error('Cần ít nhất Text, Hình ảnh hoặc Video để gọi Gemini.');
@@ -1981,7 +1990,7 @@ class FlowAutomation {
   let usedMethod = '';
 
   // =================================================================
-  // KÊNH 1: THỬ CHẠY QUA GEMINI WEB AUTOMATION (KÊNH CHÍNH)
+  // KÊNH 1: THỬ CHẠY QUA GEMINI WEB AUTOMATION (KÊNH CHÍNH - NÂNG CẤP)
   // =================================================================
   if (this.browser) {
     try {
@@ -1991,6 +2000,11 @@ class FlowAutomation {
       if (!this.geminiPage || this.geminiPage.isClosed()) {
         this.geminiPage = await this.browser.newPage();
         await this.geminiPage.setViewport({ width: 1280, height: 850 });
+        await this.geminiPage.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        
+        const context = this.browser.defaultBrowserContext();
+        await context.overridePermissions('https://gemini.google.com', ['clipboard-read', 'clipboard-write']);
+        
         await this.geminiPage.goto('https://gemini.google.com', { waitUntil: 'networkidle2', timeout: 45000 });
       } else {
         await this.geminiPage.bringToFront();
@@ -1998,54 +2012,118 @@ class FlowAutomation {
 
       const page = this.geminiPage;
       const inputSelector = 'div[contenteditable="true"]';
-      await page.waitForSelector(inputSelector, { timeout: 10000 });
+      
+      // Đợi khung chat hiển thị để chắc chắn trang đã tải xong
+      await page.waitForSelector(inputSelector, { timeout: 30000 });
 
-      // 1. Upload Media lên Web
+      // 1. Đồng bộ và kiểm tra danh sách File hợp lệ từ ổ cứng
       const mediaFiles = [];
       for (const img of images) {
         const imgPath = img.localPath || img.path;
-        if (imgPath && fs.existsSync(imgPath)) mediaFiles.push(imgPath);
+        if (imgPath && fs.existsSync(imgPath)) mediaFiles.push(path.resolve(imgPath)); 
       }
       for (const vid of videos) {
         const vidPath = vid.localPath || vid.path;
-        if (vidPath && fs.existsSync(vidPath)) mediaFiles.push(vidPath);
+        if (vidPath && fs.existsSync(vidPath)) mediaFiles.push(path.resolve(vidPath));
       }
 
+      // 2. Upload Phương Tiện bằng phương pháp Giao Thức Mạng trực tiếp (Bypass UI)
       if (mediaFiles.length > 0) {
-        const fileInputSelector = 'input[type="file"]';
-        const fileInput = await page.$(fileInputSelector);
-        if (fileInput) {
-          await fileInput.uploadFile(...mediaFiles);
-          await new Promise(r => setTimeout(r, 5000)); // Đợi file nạp lên giao diện
+        this.log(`[GEMINI-FLOW] 🚀 Đang tải trực tiếp ${mediaFiles.length} file vào bộ nhớ đệm Trình duyệt...`, 'info');
+        
+        for (const filePath of mediaFiles) {
+          const fileName = path.basename(filePath);
+          const ext = path.extname(filePath).toLowerCase();
+          
+          let mimeType = 'image/png';
+          if (ext === '.jpg' || ext === '.jpeg') mimeType = 'image/jpeg';
+          else if (ext === '.gif') mimeType = 'image/gif';
+          else if (ext === '.mp4') mimeType = 'video/mp4';
+          else if (ext === '.webm') mimeType = 'video/webm';
+          else if (ext === '.mov') mimeType = 'video/quicktime';
+
+          this.log(`[GEMINI-FLOW] Đang xử lý truyền tệp: ${fileName}`, 'info');
+
+          // Đọc file từ ổ cứng Node.js sang Base64
+          const bitmap = fs.readFileSync(filePath);
+          const base64Data = Buffer.from(bitmap).toString('base64');
+          const dataUrl = `data:${mimeType};base64,${base64Data}`;
+
+          // Inject đoạn mã xử lý tầng lõi của Trình duyệt để qua mặt lớp bảo mật giao diện
+          await page.evaluate(async (selector, url, type, name) => {
+            const chatBox = document.querySelector(selector);
+            if (!chatBox) return;
+
+            // Chuyển Base64 thành đối tượng File gốc của Browser
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const fileObject = new File([blob], name, { type });
+
+            // Tìm kiếm đối tượng quản lý trạng thái dữ liệu (Angular/Wiz State Context) bọc ngoài Khung chat
+            // Google luôn lưu trữ mảng tệp đính kèm trong các thuộc tính ngầm của Element
+            let targetContext = chatBox;
+            while (targetContext && !targetContext.__ngContext__ && !targetContext._wizContext) {
+              targetContext = targetContext.parentElement;
+            }
+
+            // Nếu tìm thấy State Context, chúng ta gán thẳng File vào mảng dữ liệu đầu vào của Gemini
+            if (targetContext) {
+              const dataTransfer = new DataTransfer();
+              dataTransfer.items.add(fileObject);
+              
+              // Tạo một sự kiện Input thật để ép React/Wiz Core cập nhật giao diện nạp file
+              chatBox.focus();
+              const nativeInputEvent = new Event('input', { bubbles: true, cancelable: true });
+              Object.defineProperty(nativeInputEvent, 'target', { writable: true, value: { files: dataTransfer.files } });
+              chatBox.dispatchEvent(nativeInputEvent);
+              
+              // Kích hoạt thêm sự kiện dán dự phòng ép đồng bộ dữ liệu nhị phân
+              const clipboardData = dataTransfer;
+              chatBox.dispatchEvent(new ClipboardEvent('paste', { bubbles: true, cancelable: true, clipboardData }));
+            }
+          }, inputSelector, dataUrl, mimeType, fileName);
+
+          await new Promise(r => setTimeout(r, 2500)); // Thời gian giãn cách để trình duyệt nạp dữ liệu vào RAM
+        }
+
+        // Kiểm tra xem hàng đợi có chứa video hay không để tăng thời gian upload lên Server Google
+        const hasVideo = mediaFiles.some(fp => ['.mp4', '.webm', '.mov', '.avi'].includes(path.extname(fp).toLowerCase()));
+        if (hasVideo) {
+          this.log('[GEMINI-FLOW] ⏳ Đang đẩy dữ liệu Video lên máy chủ Google. Chờ 18 giây để hoàn tất Chunk Upload...', 'warning');
+          await new Promise(r => setTimeout(r, 18000));
+        } else {
+          this.log('[GEMINI-FLOW] Chờ 5 giây để hình ảnh kết xuất xong...', 'success');
+          await new Promise(r => setTimeout(r, 5000));
         }
       }
 
-      // 2. Nhập văn bản Prompt
+      // 3. Nhập nội dung văn bản Prompt
       if (promptText) {
         await page.focus(inputSelector);
-        await page.evaluate((selector, text) => {
-          const element = document.querySelector(selector);
-          if (element) {
-            element.innerText = text;
-            element.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-        }, inputSelector, promptText);
-        await page.keyboard.type(' ');
+        await page.keyboard.sendCharacter(promptText);
+        await new Promise(r => setTimeout(r, 1500));
       }
 
-      // 3. Click nút Gửi
-      const sendButtonSelector = 'button[aria-label*="Send"], button[aria-label*="Gửi"]';
-      await page.waitForSelector(sendButtonSelector, { visible: true });
-      await page.click(sendButtonSelector);
+      // 4. Định vị và Click nút Gửi bằng cách mô phỏng hành vi bấm phím cứng toàn cục
+      this.log('[GEMINI-FLOW] Tiến hành gửi lệnh Prompt...', 'info');
+      await page.focus(inputSelector);
+      
+      // Sử dụng tổ hợp phím tắt hệ thống (Control + Enter) để kích hoạt lệnh gửi trực tiếp từ phần cứng ảo
+      await page.keyboard.down('Control');
+      await page.keyboard.press('Enter');
+      await page.keyboard.up('Control');
+      
+      this.log('[GEMINI-FLOW] Tin nhắn kèm phương tiện đã được gửi đi. Đang cào dữ liệu phản hồi từ Gemini...', 'info');
 
-      // 4. Cào dữ liệu chữ trả về (Stream Polling)
-      const responseSelector = ['div.message-content', '.model-response-text', '[data-test-id="model-response"]'].join(', ');
+      // 5. Cào dữ liệu chữ trả về từ Model (Stream Polling)
+      const responseSelector = 'div.message-content, .model-response-text, [data-test-id="model-response"]';
       await new Promise(r => setTimeout(r, 6000));
 
       let lastLength = 0;
       let stableCount = 0;
+      aiResponseText = '';
 
-      for (let i = 0; i < 30; i++) {
+      for (let i = 0; i < 40; i++) {
         const currentText = await page.evaluate((selector) => {
           const elements = document.querySelectorAll(selector);
           return elements.length > 0 ? elements[elements.length - 1].innerText.trim() : '';
@@ -2061,7 +2139,7 @@ class FlowAutomation {
           stableCount = 0;
           lastLength = currentText.length;
         }
-        await new Promise(r => setTimeout(r, 4000));
+        await new Promise(r => setTimeout(r, 2000)); 
       }
 
       if (!aiResponseText && lastLength > 0) {
@@ -2071,18 +2149,15 @@ class FlowAutomation {
         }, responseSelector);
       }
 
-      // Nếu lấy được chữ thành công từ Web
       if (aiResponseText) {
         usedMethod = 'Gemini Web';
       } else {
-        throw new Error('Không cào được nội dung chữ từ giao diện Web.');
+        throw new Error('Không thu thập được dữ liệu phản hồi dạng văn bản từ giao diện Web.');
       }
 
     } catch (webError) {
-      this.log(`[GEMINI-FLOW] ⚠️ Kênh Web gặp sự cố: ${webError.message}. Tiến hành kích hoạt Fallback...`, 'warning');
+      this.log(`[GEMINI-FLOW] ⚠️ Kênh Web gặp sự cố: ${webError.message}. Tự động chuyển hướng sang API Key dự phòng...`, 'warning');
     }
-  } else {
-    this.log('[GEMINI-FLOW] Không tìm thấy Trình duyệt hoạt động. Chuyển thẳng sang kênh API.', 'warning');
   }
 
   // =================================================================
@@ -2091,13 +2166,12 @@ class FlowAutomation {
   if (!aiResponseText) {
     const apiKey = node.config.apiKey?.trim();
     if (!apiKey) {
-      this.log(`[GEMINI-FLOW] ❌ LỖI: Kênh Web thất bại và chưa cài API Key dự phòng!`, 'error');
-      throw new Error('Cả hai kênh Web và API đều không khả dụng. Bạn chưa điền API Key.');
+      this.log(`[GEMINI-FLOW] ❌ LỖI TRẦM TRỌNG: Kênh Web thất bại và không tìm thấy API Key dự phòng!`, 'error');
+      throw new Error('Cả hai kênh Web và API đều không khả dụng. Vui lòng cấu hình API Key.');
     }
 
-    this.log('[GEMINI-FLOW] 🚀 Đang kích hoạt API Key dự phòng để xử lý request...', 'info');
+    this.log('[GEMINI-FLOW] 🚀 Kích hoạt API Key dự phòng để xử lý request...', 'info');
 
-    // Tái cấu trúc mảng parts cho API
     const parts = [];
     if (promptText.trim()) parts.push({ text: promptText });
 
@@ -2112,7 +2186,7 @@ class FlowAutomation {
       }
     }
 
-    // Xử lý video qua File API (Rút gọn gọi trực tiếp)
+    // Xử lý video qua File API
     for (const vid of videos) {
       const vidPath = vid.localPath || vid.path;
       if (vidPath && fs.existsSync(vidPath)) {
@@ -2137,7 +2211,6 @@ class FlowAutomation {
           const uploadData = await uploadRes.json();
           if (uploadRes.ok && uploadData.file) {
             parts.push({ fileData: { mimeType, fileUri: uploadData.file.uri } });
-            // Chấp nhận đợi ngắn hoặc bỏ qua kiểm tra ACTIVE vì đây là fallback khẩn cấp
             await new Promise(r => setTimeout(r, 5000));
           }
         } catch (vErr) {
@@ -2146,7 +2219,6 @@ class FlowAutomation {
       }
     }
 
-    // Vòng lặp thử các Model API dự phòng
     const modelsToTry = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
     for (const model of modelsToTry) {
       try {

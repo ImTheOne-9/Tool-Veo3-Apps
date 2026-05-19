@@ -78,7 +78,7 @@ const DEFAULT_CONFIG = {
     tokenCaptureTimeout: 30000,
 
     // Run browser headless (invisible) — set false if Google blocks headless
-    headless: false,
+    headless: true,
 
     // ── Option G: Proxy Rotation (STANDBY — disabled by default) ──────
     // Set proxy.enabled = true and populate proxy.list to activate.
